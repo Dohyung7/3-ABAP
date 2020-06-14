@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0420</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0420</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  alv을 mail 로 전송</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0420</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT yr206_0420.
+
+
+
+
+
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*alv 를 메일 전송</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*DATA : it_abaplist TYPE TABLE OF abaplist.</font>
+<font color ="#0000FF">*DATA : it_html     TYPE TABLE OF w3html.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DATA : lv_line TYPE sy-tabix.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DATA: objpack   LIKE STANDARD TABLE OF sopcklsti1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      tab_lines TYPE i,</font>
+<font color ="#0000FF">*      doc_chng  LIKE sodocchgi1,</font>
+<font color ="#0000FF">*      objhead   LIKE STANDARD TABLE OF solisti1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      mail      LIKE STANDARD TABLE OF solisti1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      reclist   LIKE STANDARD TABLE OF somlreci1 WITH HEADER LINE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DELETE FROM MEMORY ID 'XXX'.</font>
+<font color ="#0000FF">**  internal table에 담아 처리해도되고( 이 경우 submit프로그램에서 import를 받아처리한다)</font>
+<font color ="#0000FF">**  submit 프로그램에서 처리해도 상관없다.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*EXPORT gt_itab TO MEMORY ID 'XXX'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DELETE FROM MEMORY ID '%_LIST'.</font>
+<font color ="#0000FF">**   ALV로 리스트를 뿌릴 프로그램을 SUBMIT한다.</font>
+<font color ="#0000FF">*SUBMIT zxxxxxx WITH p_bukrs = p_bukrs</font>
+<font color ="#0000FF">*                        WITH p_batch = 'X'</font>
+<font color ="#0000FF">*  AND RETURN EXPORTING LIST TO MEMORY.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*FREE it_abaplist.</font>
+<font color ="#0000FF">*CALL FUNCTION 'LIST_FROM_MEMORY'</font>
+<font color ="#0000FF">*  TABLES</font>
+<font color ="#0000FF">*    listobject = it_abaplist</font>
+<font color ="#0000FF">*  EXCEPTIONS</font>
+<font color ="#0000FF">*    not_found  = 1</font>
+<font color ="#0000FF">*    OTHERS     = 2.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*" HTML 로 변경</font>
+<font color ="#0000FF">*FREE it_html.</font>
+<font color ="#0000FF">*CALL FUNCTION 'WWW_HTML_FROM_LISTOBJECT'</font>
+<font color ="#0000FF">*  TABLES</font>
+<font color ="#0000FF">*    html       = it_html</font>
+<font color ="#0000FF">*    listobject = it_abaplist.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**  ------------------------------------------</font>
+<font color ="#0000FF">*doc_chng-obj_name   = 'URGENT'.</font>
+<font color ="#0000FF">*doc_chng-sensitivty = 'O'.</font>
+<font color ="#0000FF">*CONCATENATE '[개인기준]' p_sdate  '기준 미처리 증빙 내역' INTO doc_chng-obj_descr</font>
+<font color ="#0000FF">*SEPARATED BY space.</font>
+<font color ="#0000FF">*doc_chng-obj_langu  = '3'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">***    objhead             = '파일제목'.</font>
+<font color ="#0000FF">*APPEND objhead.</font>
+<font color ="#0000FF">**  ------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*FREE mail.</font>
+<font color ="#0000FF">*mail[] = it_html[].</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*CLEAR lv_line.</font>
+<font color ="#0000FF">*DESCRIBE TABLE mail LINES lv_line.</font>
+<font color ="#0000FF">**</font>
+<font color ="#0000FF">*CLEAR: objpack.</font>
+<font color ="#0000FF">*objpack-transf_bin = 'X'.</font>
+<font color ="#0000FF">*objpack-head_start = 1.</font>
+<font color ="#0000FF">*objpack-head_num   = 0.</font>
+<font color ="#0000FF">*objpack-body_start = 1.</font>
+<font color ="#0000FF">*objpack-body_num   = lv_line.</font>
+<font color ="#0000FF">*objpack-doc_type   = 'HTM'.</font>
+<font color ="#0000FF">*objpack-obj_descr  = '메일제목'.</font>
+<font color ="#0000FF">*objpack-doc_size   = lv_line * 255.</font>
+<font color ="#0000FF">*objpack-obj_langu  = '3'.</font>
+<font color ="#0000FF">*APPEND objpack.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*CLEAR: reclist.</font>
+<font color ="#0000FF">*reclist-receiver = ls_ztficd10-email.</font>
+<font color ="#0000FF">*reclist-rec_type = 'U'.</font>
+<font color ="#0000FF">*APPEND reclist.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*CALL FUNCTION 'SO_NEW_DOCUMENT_SEND_API1'</font>
+<font color ="#0000FF">*  EXPORTING</font>
+<font color ="#0000FF">*    document_data              = doc_chng  " 메일 제목</font>
+<font color ="#0000FF">*    document_type              = 'HTM'</font>
+<font color ="#0000FF">*    put_in_outbox              = 'X'</font>
+<font color ="#0000FF">*    commit_work                = 'X'</font>
+<font color ="#0000FF">**   IP_ENCRYPT                 =</font>
+<font color ="#0000FF">**   IP_SIGN                    =</font>
+<font color ="#0000FF">**     IMPORTING</font>
+<font color ="#0000FF">**   SENT_TO_ALL                =</font>
+<font color ="#0000FF">**   NEW_OBJECT_ID              =</font>
+<font color ="#0000FF">*  TABLES</font>
+<font color ="#0000FF">*    object_header              = objhead</font>
+<font color ="#0000FF">*    object_content             = mail</font>
+<font color ="#0000FF">**   CONTENTS_HEX               =</font>
+<font color ="#0000FF">**   OBJECT_PARA                =</font>
+<font color ="#0000FF">**   OBJECT_PARB                =</font>
+<font color ="#0000FF">*    receivers                  = reclist</font>
+<font color ="#0000FF">*  EXCEPTIONS</font>
+<font color ="#0000FF">*    too_many_receivers         = 1</font>
+<font color ="#0000FF">*    document_not_sent          = 2</font>
+<font color ="#0000FF">*    document_type_not_exist    = 3</font>
+<font color ="#0000FF">*    operation_no_authorization = 4</font>
+<font color ="#0000FF">*    parameter_error            = 5</font>
+<font color ="#0000FF">*    x_error                    = 6</font>
+<font color ="#0000FF">*    enqueue_error              = 7</font>
+<font color ="#0000FF">*    OTHERS                     = 8.</font>
+<font color ="#0000FF">*IF sy-subrc &lt;&gt; 0.</font>
+<font color ="#0000FF">**   Implement suitable error handling here</font>
+<font color ="#0000FF">*ENDIF.</font>
+
+
+<font color ="#0000FF">*&-------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report  ZEMAIL_CL_BCS                                       *</font>
+<font color ="#0000FF">*&-------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Mauricio Lauffer</font>
+<font color ="#0000FF">*&-------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CONSTANTS:</font>
+<font color ="#0000FF">*    gc_subject TYPE so_obj_des VALUE 'ABAP Email with CL_BCS', "메일 제목</font>
+<font color ="#0000FF">*    gc_raw     TYPE char03 VALUE 'RAW'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  DATA:</font>
+<font color ="#0000FF">*    gv_mlrec         TYPE so_obj_nam,</font>
+<font color ="#0000FF">*    gv_sent_to_all   TYPE os_boolean,</font>
+<font color ="#0000FF">*    gv_email         TYPE adr6-smtp_addr,</font>
+<font color ="#0000FF">*    gv_subject       TYPE so_obj_des,</font>
+<font color ="#0000FF">*    gv_text          TYPE bcsy_text,</font>
+<font color ="#0000FF">*    gr_send_request  TYPE REF TO cl_bcs,</font>
+<font color ="#0000FF">*    gr_bcs_exception TYPE REF TO cx_bcs,</font>
+<font color ="#0000FF">*    gr_recipient     TYPE REF TO if_recipient_bcs,</font>
+<font color ="#0000FF">*    gr_sender        TYPE REF TO cl_sapuser_bcs,</font>
+<font color ="#0000FF">*    gr_document      TYPE REF TO cl_document_bcs.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  TRY.</font>
+<font color ="#0000FF">*      "전송 요청 작성</font>
+<font color ="#0000FF">*      gr_send_request = cl_bcs=&gt;create_persistent( ).</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      "이메일 발신</font>
+<font color ="#0000FF">*      gr_sender = cl_sapuser_bcs=&gt;create( sy-uname ).</font>
+<font color ="#0000FF">*      "Add sender to send request</font>
+<font color ="#0000FF">*      CALL METHOD gr_send_request-&gt;set_sender</font>
+<font color ="#0000FF">*        EXPORTING</font>
+<font color ="#0000FF">*          i_sender = gr_sender.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      "메일 수신</font>
+<font color ="#0000FF">*      gv_email = 'podndwls@naver.com'.</font>
+<font color ="#0000FF">*      gr_recipient = cl_cam_address_bcs=&gt;create_internet_address( gv_email ).</font>
+<font color ="#0000FF">*      "수신자를 추가해 메일 보내기</font>
+<font color ="#0000FF">*      CALL METHOD gr_send_request-&gt;add_recipient</font>
+<font color ="#0000FF">*        EXPORTING</font>
+<font color ="#0000FF">*          i_recipient = gr_recipient</font>
+<font color ="#0000FF">*          i_express   = 'X'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      "메일 내용</font>
+<font color ="#0000FF">*      APPEND 'Hello world! My first ABAP email!' TO gv_text.</font>
+<font color ="#0000FF">*      gr_document = cl_document_bcs=&gt;create_document(</font>
+<font color ="#0000FF">*                      i_type    = gc_raw</font>
+<font color ="#0000FF">*                      i_text    = gv_text</font>
+<font color ="#0000FF">*                      i_length  = '12'</font>
+<font color ="#0000FF">*                      i_subject = gc_subject ).</font>
+<font color ="#0000FF">*      " 문서 추가</font>
+<font color ="#0000FF">*      CALL METHOD gr_send_request-&gt;set_document( gr_document ).</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      "메일 보내기</font>
+<font color ="#0000FF">*      CALL METHOD gr_send_request-&gt;send(</font>
+<font color ="#0000FF">*        EXPORTING</font>
+<font color ="#0000FF">*          i_with_error_screen = 'X'</font>
+<font color ="#0000FF">*        RECEIVING</font>
+<font color ="#0000FF">*          result              = gv_sent_to_all ).</font>
+<font color ="#0000FF">*      IF gv_sent_to_all = 'X'.</font>
+<font color ="#0000FF">*        WRITE 'Email sent!'.</font>
+<font color ="#0000FF">*      ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      "메일 보낸거 저장</font>
+<font color ="#0000FF">*      COMMIT WORK.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      "예외 처리</font>
+<font color ="#0000FF">*    CATCH cx_bcs INTO gr_bcs_exception.</font>
+<font color ="#0000FF">*      WRITE:</font>
+<font color ="#0000FF">*        'Error!',</font>
+<font color ="#0000FF">*        'Error type:',</font>
+<font color ="#0000FF">*        gr_bcs_exception-&gt;error_type.</font>
+<font color ="#0000FF">*  ENDTRY.</font>
+<font color ="#0000FF">*</font>
+
+<font color ="#0000FF">*&-------------------------------------------------------------*</font>
+
+
+<font color ="#0000FF">*이거 체택 html 변환 이나 테이블 정리 찾아 볼 것</font>
+<font color ="#0000FF">*테이블을 그냥 전부 텍스트 변환 메일은 html 형식으로 전송댐 태그 알아서 잘 끼워두자</font>
+<font color ="#0000FF">*"----------------------------------------------------------------------</font>
+<font color ="#0000FF">*"*"Local interface:</font>
+<font color ="#0000FF">*"  IMPORTING</font>
+<font color ="#0000FF">*"     VALUE(I_SUBJECT) TYPE  SO_OBJ_DES              "메일 제목</font>
+<font color ="#0000FF">*"  TABLES</font>
+<font color ="#0000FF">*"      T_HTML STRUCTURE  SOLISTI1 OPTIONAL           "메일 내용</font>
+<font color ="#0000FF">*"      T_RECV STRUCTURE  SOMLRECI1 OPTIONAL          "메일 수신자</font>
+<font color ="#0000FF">*"  EXCEPTIONS</font>
+<font color ="#0000FF">*"      MAIL_SENT_FAILED</font>
+<font color ="#0000FF">*"----------------------------------------------------------------------</font>
+
+DATA : BEGIN OF t_html OCCURS 0,
+         test1 TYPE char10,
+         pernr TYPE yt206_0020-pernr,
+         emnam TYPE yt206_0020-emnam,
+         sexty TYPE yt206_0020-sexty,
+         entdt TYPE yt206_0020-entdt,
+         grade TYPE yt206_0020-grade,
+         bthdt TYPE yt206_0020-bthdt,
+         erdat TYPE yt206_0020-erdat,
+         erzet TYPE yt206_0020-erzet,
+         ernam TYPE yt206_0020-ernam,
+         test2 TYPE char10,
+
+       END OF t_html.
+
+CLEAR t_html.
+
+<font color ="#0000FF">* 구매문서 데이터 조회</font>
+SELECT pernr  emnam sexty entdt grade bthdt erdat erzet ernam
+  INTO CORRESPONDING FIELDS OF TABLE t_html
+  FROM yt206_0020.
+
+
+DATA : send_request       TYPE REF TO cl_bcs.
+DATA : document           TYPE REF TO cl_document_bcs.
+DATA : sender             TYPE REF TO cl_sapuser_bcs.
+DATA : recipient          TYPE REF TO if_recipient_bcs.
+DATA : exception_info TYPE REF TO if_os_exception_info,
+       bcs_exception  TYPE REF TO cx_bcs,
+       t_hex          TYPE solix_tab,
+       t_text         TYPE soli_tab,
+       w_text         LIKE LINE OF t_text,
+       html_string    TYPE string,
+       xhtml_string   TYPE xstring,
+       v_message(100),
+       v_mail         TYPE  sza5_d0700-smtp_addr.
+
+
+CONSTANTS:
+  gc_subject TYPE so_obj_des VALUE '책책 마이크 원투쓰리', "메일 제목
+  gc_raw     TYPE char03 VALUE 'RAW'.
+
+
+
+CLEAR : html_string.
+
+TRY.
+<font color ="#0000FF">*    Create persistent send request</font>
+    send_request = cl_bcs=&gt;create_persistent( ).
+
+    LOOP AT t_html.
+      t_html-test1 = '&lt;p&gt;'.
+      t_html-test2 = '&lt;/p&gt;'.
+      MOVE t_html TO w_text.
+      APPEND w_text TO t_text.
+    ENDLOOP.
+
+    document = cl_document_bcs=&gt;create_document(
+      i_type    = 'HTM'
+      i_text    = t_text
+      "i_hex    = t_hex
+      i_subject = gc_subject ).
+
+<font color ="#0000FF">*     Add document to send request</font>
+    CALL METHOD send_request-&gt;set_document( document ).
+
+<font color ="#0000FF">*     Get sender object</font>
+    sender = cl_sapuser_bcs=&gt;create( sy-uname ).
+
+<font color ="#0000FF">*     Add sender</font>
+    CALL METHOD send_request-&gt;set_sender
+      EXPORTING
+        i_sender = sender.
+
+    v_mail = 'podndwls@naver.com'.
+
+    recipient = cl_cam_address_bcs=&gt;create_internet_address( v_mail ).
+<font color ="#0000FF">*       Add recipient with its respective attributes to send request</font>
+    CALL METHOD send_request-&gt;add_recipient
+      EXPORTING
+        i_recipient = recipient.
+
+
+<font color ="#0000FF">*     Set that you don't need a Return Status E-mail</font>
+    DATA: status_mail TYPE bcs_stml.
+    status_mail = 'N'.
+
+    CALL METHOD send_request-&gt;set_status_attributes
+      EXPORTING
+        i_requested_status = status_mail
+        i_status_mail      = status_mail.
+
+<font color ="#0000FF">*     set send immediately flag</font>
+    send_request-&gt;set_send_immediately( 'X' ).
+
+<font color ="#0000FF">*     Send document</font>
+    CALL METHOD send_request-&gt;send( ).
+
+    COMMIT WORK.
+
+  CATCH cx_bcs INTO bcs_exception.
+    v_message = bcs_exception-&gt;get_text( ).
+    RAISE mail_sent_failed.
+
+
+ENDTRY.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

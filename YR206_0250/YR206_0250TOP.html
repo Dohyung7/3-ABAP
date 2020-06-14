@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0250TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0250TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0250CLS</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR624_0300_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+TABLES : EKKO, EKPO, MAKT, T161T.
+
+DATA : BEGIN OF GS_DISP,
+         EBELN TYPE EKKO-EBELN,
+         BUKRS TYPE EKKO-BUKRS,
+         BSART TYPE EKKO-BSART,
+         LIFNR TYPE EKKO-LIFNR,
+         BSTYP TYPE EKKO-BSTYP,
+         MENGE TYPE EKPO-MENGE,
+         MATNR TYPE EKPO-MATNR,
+         AEDAT TYPE EKPO-AEDAT,
+         BATXT TYPE T161T-BATXT,
+         MAKTX TYPE MAKT-MAKTX,
+       END OF GS_DISP.
+
+
+DATA : BEGIN OF GS_DISP_0200,
+         EBELN TYPE EKKO-EBELN,
+         BUKRS TYPE EKKO-BUKRS,
+         BSART TYPE EKKO-BSART,
+         LIFNR TYPE EKKO-LIFNR,
+         BSTYP TYPE EKKO-BSTYP,
+         MENGE TYPE EKPO-MENGE,
+         MATNR TYPE EKPO-MATNR,
+         AEDAT TYPE EKPO-AEDAT,
+         BATXT TYPE T161T-BATXT,
+         MAKTX TYPE MAKT-MAKTX,
+       END OF GS_DISP_0200.
+
+DATA GT_DISP_0200 LIKE TABLE OF GS_DISP_0200.
+
+DATA GT_DISP LIKE TABLE OF GS_DISP.
+<font color ="#0000FF">* DATA GS_DISP1 LIKE GS_DISP.</font>
+<font color ="#0000FF">* DATA GT_DISP1 LIKE TABLE OF GS_DISP1.</font>
+
+
+DATA : GO_CUSTOM_CONTAINER TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+       GO_GRID             TYPE REF TO CL_GUI_ALV_GRID,
+       GO_EVENT_RECEIVER   TYPE REF TO LCL_EVENT_RECEIVER.
+
+DATA : GT_FIELDCAT TYPE LVC_T_FCAT,
+       GS_FIELDCAT TYPE LVC_S_FCAT,
+       GS_LAYOUT   TYPE LVC_S_LAYO.
+
+
+SELECTION-SCREEN BEGIN OF BLOCK BLK1 WITH FRAME
+                                TITLE TEXT-001.
+SELECT-OPTIONS : S_BUKRS FOR EKKO-BUKRS,
+                 S_EBELN FOR EKKO-EBELN,
+                 S_AEDAT FOR EKPO-AEDAT.
+SELECTION-SCREEN END OF BLOCK BLK1.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

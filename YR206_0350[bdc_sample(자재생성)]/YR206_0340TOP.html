@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0340TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0340TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0340TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0340TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+
+DATA : gt_bdc    TYPE TABLE OF bdcdata,
+       gs_bdc    TYPE          bdcdata,
+       gs_option TYPE          ctu_params,
+       gt_msg    TYPE TABLE OF bdcmsgcoll,
+       gs_msg    TYPE          bdcmsgcoll.
+
+
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK bl1 WITH FRAME TITLE TEXT-t01.
+PARAMETERS : p_matnr TYPE mara-matnr,
+             p_mbrsh TYPE mara-mbrsh DEFAULT 'M',
+             p_mtart TYPE mara-mtart DEFAULT 'FERT',
+             p_maktx TYPE makt-maktx,
+             p_meins TYPE mara-meins DEFAULT 'EA'.
+SELECTION-SCREEN END OF BLOCK bl1.
+
+SELECTION-SCREEN BEGIN OF BLOCK bl2 WITH FRAME TITLE TEXT-t02.
+PARAMETERS : p_mode TYPE ctu_params-dismode DEFAULT 'N'.
+SELECTION-SCREEN END OF BLOCK bl2.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_06</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_06</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  납기 모니터</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZSDM_206_04</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT ZSDM_206_06 MESSAGE-ID YM206.
+
+include <a href ="zsdm_206_06cls.html">ZSDM_206_06CLS</a>.
+include <a href ="zsdm_206_06top.html">ZSDM_206_06TOP</a>.
+include <a href ="zsdm_206_06sel.html">ZSDM_206_06SEL</a>.
+include <a href ="zsdm_206_06f01.html">ZSDM_206_06F01</a>.
+include <a href ="zsdm_206_06i01.html">ZSDM_206_06I01</a>.
+include <a href ="zsdm_206_06o01.html">ZSDM_206_06O01</a>.
+
+
+
+INITIALIZATION.
+
+
+AT SELECTION-SCREEN.
+  "입력값 체크 또는 USER-COMMAND 처리(PAI 역할)
+
+
+
+START-OF-SELECTION.
+
+PERFORM get_kna1.
+PERFORM get_data.
+
+CALL SCREEN 0100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* 0100 --&gt; 납기 모니터링</font>
+<font color ="#0000FF">* 0100 --&gt; 납기 모니터링</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM206</font>
+<font color ="#0000FF">*002</font>
+<font color ="#0000FF">*003</font>
+<font color ="#0000FF">*004</font>
+<font color ="#0000FF">*006</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_03TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_03TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZSDM_206_03TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZSDM_206_03TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+
+DATA : aa TYPE char255,
+       bb TYPE char255,
+       cc TYPE char255.
+
+DATA : BEGIN OF gs_disp,
+         document_type TYPE char10, "문서유형
+         document_num  TYPE char10, "문서번호
+         history       TYPE char40, "내역
+         date          TYPE budat,  "날짜 &lt;&lt;&lt; CBO 필드 date1 로 되어있음 변경할 것
+         stat          TYPE icon-id, "상태
+       END OF gs_disp.
+
+DATA gt_disp LIKE TABLE OF gs_disp.
+DATA gt_data_set LIKE TABLE OF gs_disp.
+
+
+
+DATA : go_custom_container TYPE REF TO cl_gui_custom_container,
+       go_grid             TYPE REF TO cl_gui_alv_grid,
+       go_event_receiver   TYPE REF TO lcl_event_receiver.
+
+DATA : gt_fieldcat TYPE lvc_t_fcat,
+       gs_fieldcat TYPE lvc_s_fcat,
+       gs_layout   TYPE lvc_s_layo.
+
+DATA : ok_code TYPE sy-ucomm.
+
+DATA ltab TYPE vrm_values WITH HEADER LINE. " SHIFT TYPE TEXT
+
+DATA : aaa          TYPE char255, bbb TYPE char255, ccc TYPE char255,txt_day_type TYPE char255. "연습
+
+
+DATA : gv_test TYPE char255.
+
+  DATA : lv_get_data TYPE char255. " 메모리값 테스트 gv로 변경 요망
+
+
+
+DATA : BEGIN OF gs_vbak,          " 영업문서: 헤더데이타
+         vbeln TYPE vbak-vbeln,   "key 판매 문서
+         erdat TYPE vbak-erdat,   " 레코드생성일
+       END OF gs_vbak.
+
+DATA : BEGIN OF gs_mseg,             "전표 세그먼트: 자재
+         mblnr      TYPE mseg-mblnr,      "key 자재 문서 번호
+         mjahr      TYPE mseg-mjahr,      "key 자재 문서 연도
+         zeile      TYPE mseg-zeile,      "key 자재 문서 항목
+         budat_mkpf TYPE mseg-budat_mkpf, " 전표의 전기일
+         matnr      TYPE mseg-matnr,      " 자재 번호
+       END OF gs_mseg.
+
+DATA : BEGIN OF gs_makt,        " 자재 내역
+         matnr TYPE makt-matnr, "key 자재 번호
+         spras TYPE makt-spras, "key 언어 키
+         maktx TYPE makt-maktx, "자재 내역
+       END OF gs_makt.
+
+DATA : BEGIN OF gs_likp,                "SD 문서: 납품 헤더데이타
+         vbeln     TYPE likp-vbeln,     "납품
+         wadat_ist TYPE likp-wadat_ist, "실제 자재 이동일
+       END OF gs_likp.
+
+DATA : BEGIN OF gs_lips,        "SD 문서: 납품: 품목 데이터
+         vbeln TYPE lips-vbeln, "key 납품
+         posnr TYPE lips-posnr, "key 납품품목
+         arktx TYPE lips-arktx, "판매 오더 품목에 대한 내역
+         vgbel TYPE char10, "판매 오더 참조 문서
+       END OF gs_lips.
+
+DATA : gt_vbak     LIKE TABLE OF gs_vbak,
+       gt_mseg1220 LIKE TABLE OF gs_mseg,
+       gt_mseg1230 LIKE TABLE OF gs_mseg,
+       gt_makt     LIKE TABLE OF gs_makt,
+       gt_likp     LIKE TABLE OF gs_likp,
+       gt_lips1220 LIKE TABLE OF gs_lips,
+       gt_lips1230 LIKE TABLE OF gs_lips.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

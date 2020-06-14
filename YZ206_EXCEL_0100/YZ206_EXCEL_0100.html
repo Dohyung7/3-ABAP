@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YZ206_EXCEL_0100</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YZ206_EXCEL_0100</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report Y230_0400</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT yz206_excel_0100 MESSAGE-ID YM230.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& TABLES 정의</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+TABLES: dd02l,          "SAP 테이블
+        sscrfields.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& TYPE-POOLS , TYPES</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& INTERNAL TABLES</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  GLOBALE   VARIABLES</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+DATA: gt_fieldcat  TYPE lvc_t_fcat,
+      gt_tab       TYPE REF TO data,
+      g_filelength TYPE  i.
+
+FIELD-SYMBOLS: &lt;all_table&gt; TYPE table.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  CONSTANTS</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+CONSTANTS: c_xtrue(1)  TYPE c VALUE 'X',
+           c_xfalse(1) TYPE c VALUE ' '.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">* SELECTION SCREEN ( SELECT-OPTIONS & PARAMETERS )</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+SELECTION-SCREEN BEGIN OF BLOCK frm1 WITH FRAME TITLE TEXT-s01.
+
+PARAMETERS: pa_tab   LIKE dd02l-tabname   OBLIGATORY,  "Table Name
+            dateinam LIKE rlgrap-filename OBLIGATORY.  "File  Name
+
+SELECTION-SCREEN SKIP.
+
+PARAMETERS: pa_dow RADIOBUTTON  GROUP g1  DEFAULT 'X',
+            pa_up  RADIOBUTTON  GROUP g1.
+
+SELECTION-SCREEN END OF BLOCK frm1.
+
+<font color ="#0000FF">** Description</font>
+<font color ="#0000FF">*※ Upload 데이터 포맷 준수 사항</font>
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT (79) TEXT-z01.
+SELECTION-SCREEN END OF LINE.
+
+<font color ="#0000FF">* 1. 클라이언트 컬럼 있을 것</font>
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT (79) TEXT-z02.
+SELECTION-SCREEN END OF LINE.
+
+<font color ="#0000FF">* 2. File 확장자   - *.txt</font>
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT (79) TEXT-z03.
+SELECTION-SCREEN END OF LINE.
+
+<font color ="#0000FF">* 3. 데이터 구분자 : TAB(Tabulator)</font>
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT (79) TEXT-z04.
+SELECTION-SCREEN END OF LINE.
+
+<font color ="#0000FF">* 4. Date format   : YYYYMMDD</font>
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT (79) TEXT-z05.
+SELECTION-SCREEN END OF LINE.
+
+<font color ="#0000FF">* 5. Time format   - HH:MM:SS</font>
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN COMMENT (79) TEXT-z06.
+SELECTION-SCREEN END OF LINE.
+
+SELECTION-SCREEN FUNCTION KEY 1.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*     INITIALIZATION.                                                  *</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+INITIALIZATION.
+  MOVE '테이블조회' TO sscrfields-functxt_01.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">* SELECTION-SCREEN</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+AT  SELECTION-SCREEN.
+  IF sscrfields-ucomm = 'FC01'.
+    SET PARAMETER ID 'DTB' FIELD pa_tab.
+    CALL TRANSACTION 'SE16' AND SKIP FIRST SCREEN.
+  ENDIF.
+
+<font color ="#0000FF">** 값 확인.</font>
+  PERFORM check_input_data.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR dateinam.
+  PERFORM get_filename.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*   START OF SELECTION</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+START-OF-SELECTION.
+  PERFORM field_catalog_merge.
+  PERFORM change TABLES gt_fieldcat.
+  PERFORM create_dynamic_table.
+
+  IF pa_dow  EQ 'X'.
+    PERFORM down_load_to_local.
+  ELSE.
+    PERFORM upload_to_local.
+  ENDIF.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*   END-OF-SELECTION</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+END-OF-SELECTION.
+  LEAVE LIST-PROCESSING.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  check_input_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM check_input_data .
+  DATA: ls_dd02l  LIKE dd02l.
+
+  SELECT SINGLE *
+  FROM dd02l
+  INTO ls_dd02l
+  WHERE tabname = pa_tab
+  AND as4local =  'A'.
+
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE w000 WITH 'Table Name 입력란을 확인하세요!'.
+  ENDIF.
+
+  IF pa_tab(1) &lt;&gt; 'Z' AND pa_tab(1) &lt;&gt; 'Y'.
+<font color ="#0000FF">*    MESSAGE e000 WITH 'CBO Table만 가능...'.</font>
+  ENDIF.
+
+ENDFORM.                    " check_input_data
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  get_filename</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM get_filename.
+
+  CALL FUNCTION 'WS_FILENAME_GET'
+    EXPORTING
+      def_filename     = dateinam
+      def_path         = 'C:\'
+      mask             = ',*.*,*.*.'
+      mode             = 'O'
+      title            = ' '
+    IMPORTING
+      filename         = dateinam
+    EXCEPTIONS
+      inv_winsys       = 1
+      no_batch         = 2
+      selection_cancel = 3
+      selection_error  = 4
+      OTHERS           = 5.
+
+  IF sy-subrc &lt;&gt; 0.
+    WRITE: 'Error occurs IN getting filename!'.
+  ENDIF.
+
+ENDFORM.                    " get_filename
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  field_catalog_merge</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM field_catalog_merge .
+  REFRESH gt_fieldcat.  CLEAR gt_fieldcat.
+
+  CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_structure_name = pa_tab
+    CHANGING
+      ct_fieldcat      = gt_fieldcat.
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE  e000  WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  ENDIF.
+
+ENDFORM.                    " field_catalog_merge
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  change</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM change TABLES  p_gt_fieldcat TYPE lvc_t_fcat.
+
+  DATA:l_fieldcat_s LIKE p_gt_fieldcat.
+
+  LOOP AT p_gt_fieldcat INTO l_fieldcat_s.
+    IF l_fieldcat_s-datatype = 'DATS'.
+      l_fieldcat_s-datatype = 'CHAR'.
+      l_fieldcat_s-dd_outlen = '10'.
+      l_fieldcat_s-intlen  = '000008'.
+    ELSEIF l_fieldcat_s-datatype = 'TIMS'.
+      l_fieldcat_s-datatype = 'CHAR'.
+      l_fieldcat_s-dd_outlen = '8'.
+      l_fieldcat_s-intlen  = '000006'.
+    ENDIF.
+    MODIFY p_gt_fieldcat FROM l_fieldcat_s INDEX sy-tabix.
+
+  ENDLOOP.
+ENDFORM.                    " change
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  create_dynamic_table</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM create_dynamic_table .
+  CLEAR gt_tab.
+
+  CALL METHOD cl_alv_table_create=&gt;create_dynamic_table
+    EXPORTING
+      it_fieldcatalog = gt_fieldcat
+    IMPORTING
+      ep_table        = gt_tab.
+
+  ASSIGN gt_tab-&gt;* TO &lt;all_table&gt;.
+
+ENDFORM.                    " create_dynamic_table
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  down_load_to_local</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM down_load_to_local .
+
+  DATA: l_filename TYPE string.
+
+  REFRESH &lt;all_table&gt;.  CLEAR &lt;all_table&gt;.
+
+  SELECT * FROM   (pa_tab)
+  INTO CORRESPONDING FIELDS OF TABLE  &lt;all_table&gt;.
+
+  l_filename =  dateinam.
+
+  CALL FUNCTION 'GUI_DOWNLOAD'
+    EXPORTING
+      filename                = l_filename
+      filetype                = 'ASC'
+      write_field_separator   = 'X'
+    IMPORTING
+      filelength              = g_filelength
+    TABLES
+      data_tab                = &lt;all_table&gt;
+    EXCEPTIONS
+      file_write_error        = 1
+      no_batch                = 2
+      gui_refuse_filetransfer = 3
+      invalid_type            = 4
+      no_authority            = 5
+      unknown_error           = 6
+      header_not_allowed      = 7
+      separator_not_allowed   = 8
+      filesize_not_allowed    = 9
+      header_too_long         = 10
+      dp_error_create         = 11
+      dp_error_send           = 12
+      dp_error_write          = 13
+      unknown_dp_error        = 14
+      access_denied           = 15
+      dp_out_of_memory        = 16
+      disk_full               = 17
+      dp_timeout              = 18
+      file_not_found          = 19
+      dataprovider_exception  = 20
+      control_flush_error     = 21
+      OTHERS                  = 22.
+
+<font color ="#0000FF">*  CALL FUNCTION 'WS_DOWNLOAD'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      filename   = dateinam</font>
+<font color ="#0000FF">*      filetype   = 'DAT'</font>
+<font color ="#0000FF">*    IMPORTING</font>
+<font color ="#0000FF">*      filelength = g_filelength</font>
+<font color ="#0000FF">*    TABLES</font>
+<font color ="#0000FF">*      data_tab   = .</font>
+
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE s000
+    WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  ELSE.
+    MESSAGE  s000 WITH  '다운로드 성공'   g_filelength.
+  ENDIF.
+
+ENDFORM.                    " down_load_to_local
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  upload_to_local</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM upload_to_local .
+  REFRESH &lt;all_table&gt;.  CLEAR &lt;all_table&gt;.
+
+  DATA: l_filename TYPE string .
+
+  l_filename = dateinam.
+
+  CALL FUNCTION 'GUI_UPLOAD'
+    EXPORTING
+      filename                = l_filename
+<font color ="#0000FF">*     FILETYPE                = 'ASC'</font>
+      has_field_separator     = 'X'
+<font color ="#0000FF">*     HEADER_LENGTH           = 0</font>
+<font color ="#0000FF">*     READ_BY_LINE            = 'X'</font>
+<font color ="#0000FF">*     DAT_MODE                = ' '</font>
+<font color ="#0000FF">*     CODEPAGE                = ' '</font>
+<font color ="#0000FF">*     IGNORE_CERR             = ABAP_TRUE</font>
+<font color ="#0000FF">*     REPLACEMENT             = '#'</font>
+<font color ="#0000FF">*     CHECK_BOM               = ' '</font>
+<font color ="#0000FF">* IMPORTING</font>
+<font color ="#0000FF">*     FILELENGTH              =</font>
+<font color ="#0000FF">*     HEADER                  =</font>
+    TABLES
+      data_tab                = &lt;all_table&gt;
+    EXCEPTIONS
+      file_open_error         = 1
+      file_read_error         = 2
+      no_batch                = 3
+      gui_refuse_filetransfer = 4
+      invalid_type            = 5
+      no_authority            = 6
+      unknown_error           = 7
+      bad_data_format         = 8
+      header_not_allowed      = 9
+      separator_not_allowed   = 10
+      header_too_long         = 11
+      unknown_dp_error        = 12
+      access_denied           = 13
+      dp_out_of_memory        = 14
+      disk_full               = 15
+      dp_timeout              = 16
+      OTHERS                  = 17.
+
+<font color ="#0000FF">*  CALL FUNCTION 'WS_UPLOAD'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      filename = dateinam</font>
+<font color ="#0000FF">*      filetype = 'DAT'</font>
+<font color ="#0000FF">*    TABLES</font>
+<font color ="#0000FF">*      data_tab = .</font>
+<font color ="#0000FF">*</font>
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE s000
+    WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  ELSE.
+
+    MODIFY (pa_tab) FROM TABLE &lt;all_table&gt;.
+
+    IF sy-subrc EQ  0.
+      MESSAGE s000 WITH  '업로드 성공'  sy-dbcnt.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.                    " upload_to_local
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM230</font>
+<font color ="#0000FF">*000</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

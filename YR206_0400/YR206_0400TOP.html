@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0400TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0400TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR229_0570TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+
+PARAMETERS P_YEAR TYPE GJAHR.
+
+DATA : BEGIN OF GS_DISP,
+         OBJNR  TYPE COSP_BAK-OBJNR,
+         GJAHR  TYPE COSP_BAK-GJAHR,
+         WRTTP  TYPE COSP_BAK-WRTTP,
+         KSTAR  TYPE COSP_BAK-KSTAR,
+         SUM    TYPE CHAR250,
+         WTG001 TYPE COSP_BAK-WTG001,
+         WTG002 TYPE COSP_BAK-WTG002,
+         WTG003 TYPE COSP_BAK-WTG003,
+         WTG004 TYPE COSP_BAK-WTG004,
+         WTG005 TYPE COSP_BAK-WTG005,
+         WTG006 TYPE COSP_BAK-WTG006,
+         WTG007 TYPE COSP_BAK-WTG007,
+         WTG008 TYPE COSP_BAK-WTG008,
+         WTG009 TYPE COSP_BAK-WTG009,
+         WTG010 TYPE COSP_BAK-WTG010,
+         WTG011 TYPE COSP_BAK-WTG011,
+         WTG012 TYPE COSP_BAK-WTG012,
+         WTG013 TYPE COSP_BAK-WTG013,
+         WTG014 TYPE COSP_BAK-WTG014,
+         WTG015 TYPE COSP_BAK-WTG015,
+         WTG016 TYPE COSP_BAK-WTG016,
+         TWAER  TYPE COSP_BAK-TWAER,
+  END OF GS_DISP.
+
+
+DATA GT_DISP LIKE TABLE OF GS_DISP.
+
+FIELD-SYMBOLS &lt;PS_DISP-WTG02&gt; TYPE COSP_BAK-WTG001.
+
+<font color ="#0000FF">***SELECION SCREEN 생성</font>
+<font color ="#0000FF">**SELECTION-SCREEN BEGIN OF BLOCK BLK1 WITH FRAME</font>
+<font color ="#0000FF">**                                   TITLE TEXT-001.</font>
+<font color ="#0000FF">**</font>
+<font color ="#0000FF">**SELECT-OPTIONS : S_PERNR FOR YT229_0030-PERNR,</font>
+<font color ="#0000FF">**                 S_ENAME FOR YT229_0030-ENAME,</font>
+<font color ="#0000FF">**                 S_SEXTY FOR YT229_0030-SEXTY,</font>
+<font color ="#0000FF">**                 S_GRADE FOR YT229_0030-GRADE,</font>
+<font color ="#0000FF">**                 S_ENTDT FOR YT229_0030-ENTDT.</font>
+<font color ="#0000FF">**</font>
+<font color ="#0000FF">**</font>
+<font color ="#0000FF">**SELECTION-SCREEN END OF BLOCK BLK1.</font>
+
+<font color ="#0000FF">* CLASS 변수 설정</font>
+DATA : GO_DOCKING_CONTAINER TYPE REF TO CL_GUI_DOCKING_CONTAINER,
+       GO_GRID              TYPE REF TO CL_GUI_ALV_GRID.
+<font color ="#0000FF">*       GO_EVENT_RECEIVER TYPE REF TO LCL_EVENT_RECEIVER.</font>
+
+<font color ="#0000FF">* METHOD 변수 설정</font>
+DATA GS_FIELDCAT TYPE LVC_S_FCAT.
+DATA GT_FIELDCAT TYPE LVC_T_FCAT.
+DATA GS_LAYOUT   TYPE LVC_S_LAYO.
+DATA : GT_SORT TYPE LVC_T_SORT,
+       GS_SORT TYPE LVC_S_SORT.
+DATA : GT_TOOLBAR TYPE UI_FUNCTIONS.
+DATA : GS_TOOLBAR TYPE UI_FUNC.
+<font color ="#0000FF">**********************************DATA GS_SORT TYPE LINE OF GT_SORT.</font>
+DATA OK_CODE TYPE SY-UCOMM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

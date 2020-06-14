@@ -1,0 +1,408 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0410</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0410</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  프로그램 YR206_0410</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0410</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT yr206_0410.
+
+<font color ="#0000FF">*DATA: w_subject       LIKE sodocchgi1,</font>
+<font color ="#0000FF">*      i_pack_list     LIKE sopcklsti1 OCCURS 1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      i_objhead       LIKE solisti1 OCCURS 1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      i_contents_text LIKE solisti1 OCCURS 10 WITH HEADER LINE,      "FOR MAIL CONTENTS</font>
+<font color ="#0000FF">*      i_contents_bin  TYPE STANDARD TABLE OF solisti1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      i_contents_hex  TYPE STANDARD TABLE OF solix WITH HEADER LINE,    "for attachment</font>
+<font color ="#0000FF">*      i_receiver      LIKE somlreci1 OCCURS 1 WITH HEADER LINE,</font>
+<font color ="#0000FF">*      content_out     LIKE solisti1 OCCURS 0 WITH HEADER LINE.</font>
+<font color ="#0000FF">*DATA: li_contents_hex TYPE STANDARD TABLE OF solix WITH HEADER LINE.</font>
+<font color ="#0000FF">*lv_hex1 = cl_abap_char_utilities=&gt;cr_lf.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**Create the body of the attachment file of the mail INTO li_contents_bin-line SEPARATED BY lc_tab.</font>
+<font color ="#0000FF">*CONCATENATE li_contents_bin-line lv_hex1 INTO li_contents_bin-line.</font>
+<font color ="#0000FF">*APPEND li_contents_bin.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**Converting the table contents for attachment to xstring</font>
+<font color ="#0000FF">*LOOP AT li_contents_bin.</font>
+<font color ="#0000FF">*  CALL FUNCTION 'SCMS_STRING_TO_XSTRING'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      text   = li_contents_bin-line</font>
+<font color ="#0000FF">*    IMPORTING</font>
+<font color ="#0000FF">*      buffer = li_contents-line</font>
+<font color ="#0000FF">*    EXCEPTIONS</font>
+<font color ="#0000FF">*      failed = 1</font>
+<font color ="#0000FF">*      OTHERS = 2.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**Converting the table contents from xstring to binary</font>
+<font color ="#0000FF">*  CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      buffer     = li_contents-line</font>
+<font color ="#0000FF">**     APPEND_TO_TABLE       = 'I_CONTENTS_HEX'</font>
+<font color ="#0000FF">*    TABLES</font>
+<font color ="#0000FF">*      binary_tab = li_contents_hex.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  LOOP AT li_contents_hex.</font>
+<font color ="#0000FF">*    APPEND li_contents_hex TO i_contents_hex .</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">** FM called for sending the mail to the intended recipients</font>
+<font color ="#0000FF">*  CALL FUNCTION 'SO_NEW_DOCUMENT_ATT_SEND_API1'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      document_data = w_subject</font>
+<font color ="#0000FF">*      put_in_outbox = 'X'</font>
+<font color ="#0000FF">*      commit_work   = 'X'</font>
+<font color ="#0000FF">*    IMPORTING</font>
+<font color ="#0000FF">*      sent_to_all   = sent_to_all</font>
+<font color ="#0000FF">*    TABLES</font>
+<font color ="#0000FF">*      packing_list  = i_pack_list</font>
+<font color ="#0000FF">*      object_header = i_objhead</font>
+<font color ="#0000FF">*      contents_hex  = i_contents_hex</font>
+<font color ="#0000FF">*      contents_txt  = i_contents_text</font>
+<font color ="#0000FF">*      receivers     = i_receiver.</font>
+
+PARAMETER: p_email1 LIKE somlreci1-receiver DEFAULT 'podndwls@naver.com',
+           p_sender LIKE somlreci1-receiver DEFAULT 'podndwls@naver.com',
+           p_delspl AS CHECKBOX.
+
+
+DATA: gd_recsize TYPE i.
+
+TYPES: BEGIN OF t_tbtcp.
+    INCLUDE STRUCTURE tbtcp.
+
+TYPES: END OF t_tbtcp.
+DATA: it_tbtcp TYPE STANDARD TABLE OF t_tbtcp INITIAL SIZE 0,
+      wa_tbtcp TYPE t_tbtcp.
+
+
+DATA: gd_eventid                 LIKE tbtcm-eventid,
+      gd_eventparm               LIKE tbtcm-eventparm,
+      gd_external_program_active LIKE tbtcm-xpgactive,
+      gd_jobcount                LIKE tbtcm-jobcount,
+      gd_jobname                 LIKE tbtcm-jobname,
+      gd_stepcount               LIKE tbtcm-stepcount,
+      gd_error                   TYPE sy-subrc,
+      gd_reciever                TYPE sy-subrc.
+
+
+DATA: w_recsize TYPE i.
+
+DATA: gd_subject         LIKE sodocchgi1-obj_descr,
+      it_mess_bod        LIKE solisti1 OCCURS 0 WITH HEADER LINE,
+      it_mess_att        LIKE solisti1 OCCURS 0 WITH HEADER LINE,
+      gd_sender_type     LIKE soextreci1-adr_typ,
+      gd_attachment_desc TYPE so_obj_nam,
+      gd_attachment_name TYPE so_obj_des.
+
+DATA: gd_spool_nr    LIKE tsp01-rqident,
+      gd_destination LIKE rlgrap-filename,
+      gd_bytecount   LIKE tst01-dsize,
+      gd_buffer      TYPE string.
+
+
+DATA: BEGIN OF it_pdf_output OCCURS 0.
+    INCLUDE STRUCTURE tline.
+DATA: END OF it_pdf_output.
+CONSTANTS: c_dev       LIKE sy-sysid VALUE 'DEV',
+           c_no(1)     TYPE c VALUE ' ',
+           c_device(4) TYPE c VALUE 'LOCL'.
+
+
+<font color ="#0000FF">************************************************************************</font>
+START-OF-SELECTION.
+
+  WRITE 'Hello World'.
+  NEW-PAGE.
+  COMMIT WORK.
+  NEW-PAGE PRINT OFF.
+  IF sy-batch EQ 'X'.
+    PERFORM get_job_details.
+    PERFORM obtain_spool_id.
+    PERFORM convert_spool_to_pdf.
+    PERFORM process_email.
+
+    IF p_delspl EQ 'X'.
+      PERFORM delete_spool.
+    ENDIF.
+    IF sy-sysid = c_dev.
+      WAIT UP TO 5 SECONDS.
+      SUBMIT rsconn01 WITH mode = 'INT' WITH output = 'X' AND RETURN.
+    ENDIF.
+  ELSE.
+    SKIP.
+    WRITE:/ 'Program must be executed in background in-order for spool',
+    'request to be created.'.
+  ENDIF.
+
+
+
+FORM obtain_spool_id.
+  CHECK NOT ( gd_jobname IS INITIAL ).
+  CHECK NOT ( gd_jobcount IS INITIAL ).
+  SELECT *
+    FROM tbtcp
+    INTO TABLE it_tbtcp
+    WHERE jobname = gd_jobname
+    AND jobcount = gd_jobcount
+     AND stepcount = gd_stepcount
+     AND listident &lt;&gt; '0000000000'
+    ORDER BY jobname jobcount stepcount.
+  READ TABLE it_tbtcp INTO wa_tbtcp INDEX 1.
+  IF sy-subrc = 0.
+    MESSAGE s004(zdd) WITH gd_spool_nr. gd_spool_nr = wa_tbtcp-listident.
+    MESSAGE s004(zdd) WITH gd_spool_nr.
+  ELSE.
+    MESSAGE s005(zdd).
+  ENDIF.
+ENDFORM.
+
+
+FORM get_job_details.
+<font color ="#0000FF">* Get current job details</font>
+  CALL FUNCTION 'GET_JOB_RUNTIME_INFO'
+    IMPORTING
+      eventid                 = gd_eventid
+      eventparm               = gd_eventparm
+      external_program_active = gd_external_program_active
+      jobcount                = gd_jobcount
+      jobname                 = gd_jobname
+      stepcount               = gd_stepcount
+    EXCEPTIONS
+      no_runtime_info         = 1
+      OTHERS                  = 2.
+ENDFORM.
+
+
+FORM convert_spool_to_pdf.
+  CALL FUNCTION 'CONVERT_ABAPSPOOLJOB_2_PDF'
+    EXPORTING
+      src_spoolid              = gd_spool_nr
+      no_dialog                = c_no
+      dst_device               = c_device
+    IMPORTING
+      pdf_bytecount            = gd_bytecount
+    TABLES
+      pdf                      = it_pdf_output
+    EXCEPTIONS
+      err_no_abap_spooljob     = 1
+      err_no_spooljob          = 2
+      err_no_permission        = 3
+      err_conv_not_possible    = 4
+      err_bad_destdevice       = 5
+      user_cancelled           = 6
+      err_spoolerror           = 7
+      err_temseerror           = 8
+      err_btcjob_open_failed   = 9
+      err_btcjob_submit_failed = 10
+      err_btcjob_close_failed  = 11
+      OTHERS                   = 12.
+  CHECK sy-subrc = 0.
+
+  LOOP AT it_pdf_output.
+    TRANSLATE it_pdf_output USING ' ~'.
+    CONCATENATE gd_buffer it_pdf_output INTO gd_buffer.
+  ENDLOOP.
+  TRANSLATE gd_buffer USING '~ '.
+  DO.
+    it_mess_att = gd_buffer.
+    APPEND it_mess_att.
+    SHIFT gd_buffer LEFT BY 255 PLACES.
+    IF gd_buffer IS INITIAL.
+      EXIT.
+    ENDIF.
+  ENDDO.
+ENDFORM.
+
+FORM process_email.
+  DESCRIBE TABLE it_mess_att LINES gd_recsize.
+  CHECK gd_recsize &gt; 0.
+  PERFORM send_email USING p_email1.
+ENDFORM.
+
+
+FORM send_email USING p_email.
+  CHECK NOT ( p_email IS INITIAL ).
+  REFRESH it_mess_bod.
+<font color ="#0000FF">* Default subject matter</font>
+  gd_subject = 'Subject'.
+  gd_attachment_desc = 'Attachname'.
+<font color ="#0000FF">* CONCATENATE 'attach_name' ' ' INTO gd_attachment_name.</font>
+  it_mess_bod = 'Message Body text, line 1'.
+  APPEND it_mess_bod.
+  it_mess_bod = 'Message Body text, line 2...'.
+  APPEND it_mess_bod.
+<font color ="#0000FF">* If no sender specified - default blank</font>
+  IF p_sender EQ space.
+    gd_sender_type = space.
+  ELSE.
+    gd_sender_type = 'INT'.
+  ENDIF.
+<font color ="#0000FF">* Send file by email as .xls speadsheet</font>
+  PERFORM send_file_as_email_attachment
+  TABLES it_mess_bod
+    it_mess_att USING p_email
+          'Example .xls documnet attachment'
+          'PDF'
+          gd_attachment_name
+          gd_attachment_desc
+          p_sender
+          gd_sender_type
+          CHANGING gd_error
+            gd_reciever.
+ENDFORM.
+
+
+FORM delete_spool.
+  DATA: ld_spool_nr TYPE tsp01_sp0r-rqid_char.
+  ld_spool_nr = gd_spool_nr.
+  CHECK p_delspl &lt;&gt; c_no.
+  CALL FUNCTION 'RSPO_R_RDELETE_SPOOLREQ'
+    EXPORTING
+      spoolid = ld_spool_nr.
+ENDFORM.
+
+
+FORM send_file_as_email_attachment
+  TABLES it_message
+    it_attach
+  USING p_email
+        p_mtitle
+        p_format
+        p_filename
+        p_attdescription
+        p_sender_address
+        p_sender_addres_type
+  CHANGING
+          p_error
+        p_reciever.
+
+
+  DATA: ld_error               TYPE sy-subrc,
+        ld_reciever            TYPE sy-subrc,
+        ld_mtitle              LIKE sodocchgi1-obj_descr,
+        ld_email               LIKE somlreci1-receiver,
+        ld_format              TYPE so_obj_tp,
+        ld_attdescription      TYPE so_obj_nam,
+        ld_attfilename         TYPE so_obj_des,
+        ld_sender_address      LIKE soextreci1-receiver,
+        ld_sender_address_type LIKE soextreci1-adr_typ,
+        ld_receiver            LIKE sy-subrc.
+
+  DATA: t_packing_list  LIKE sopcklsti1 OCCURS 0 WITH HEADER LINE,
+        t_contents      LIKE solisti1 OCCURS 0 WITH HEADER LINE,
+        t_receivers     LIKE somlreci1 OCCURS 0 WITH HEADER LINE,
+        t_attachment    LIKE solisti1 OCCURS 0 WITH HEADER LINE,
+        t_object_header LIKE solisti1 OCCURS 0 WITH HEADER LINE,
+        w_cnt           TYPE i,
+        w_sent_all(1)   TYPE c,
+        w_doc_data      LIKE sodocchgi1.
+
+  ld_email = p_email.
+  ld_mtitle = p_mtitle.
+  ld_format = p_format.
+  ld_attdescription = p_attdescription.
+  ld_attfilename = p_filename.
+  ld_sender_address = p_sender_address.
+  ld_sender_address_type = p_sender_addres_type.
+
+  w_doc_data-doc_size = 1.
+
+  w_doc_data-obj_langu = sy-langu.
+  w_doc_data-obj_name = 'SAPRPT'.
+  w_doc_data-obj_descr = ld_mtitle .
+  w_doc_data-sensitivty = 'F'.
+
+  CLEAR w_doc_data.
+  READ TABLE it_attach INDEX w_cnt.
+  w_doc_data-doc_size = ( w_cnt - 1 ) * 255 + strlen( it_attach ).
+  w_doc_data-obj_langu = sy-langu.
+  w_doc_data-obj_name = 'SAPRPT'.
+  w_doc_data-obj_descr = ld_mtitle.
+  w_doc_data-sensitivty = 'F'.
+  CLEAR t_attachment.
+  REFRESH t_attachment.
+  t_attachment[] = it_attach[].
+
+  CLEAR t_packing_list.
+  REFRESH t_packing_list.
+  t_packing_list-transf_bin = space.
+  t_packing_list-head_start = 1.
+  t_packing_list-head_num = 0.
+  t_packing_list-body_start = 1.
+  DESCRIBE TABLE it_message LINES t_packing_list-body_num.
+  t_packing_list-doc_type = 'RAW'.
+  APPEND t_packing_list.
+
+  t_packing_list-transf_bin = 'X'.
+  t_packing_list-head_start = 1.
+  t_packing_list-head_num = 1.
+  t_packing_list-body_start = 1.
+
+  DESCRIBE TABLE t_attachment LINES t_packing_list-body_num.
+  t_packing_list-doc_type = ld_format.
+  t_packing_list-obj_descr = ld_attdescription.
+  t_packing_list-obj_name = ld_attfilename.
+  t_packing_list-doc_size = t_packing_list-body_num * 255.
+  APPEND t_packing_list.
+
+  CLEAR t_receivers.
+  REFRESH t_receivers.
+  t_receivers-receiver = ld_email.
+  t_receivers-rec_type = 'U'.
+  t_receivers-com_type = 'INT'.
+  t_receivers-notif_del = 'X'.
+  t_receivers-notif_ndel = 'X'.
+  APPEND t_receivers.
+  CALL FUNCTION 'SO_DOCUMENT_SEND_API1'
+    EXPORTING
+      document_data              = w_doc_data
+      put_in_outbox              = 'X'
+      sender_address             = ld_sender_address
+      sender_address_type        = ld_sender_address_type
+      commit_work                = 'X'
+    IMPORTING
+      sent_to_all                = w_sent_all
+    TABLES
+      packing_list               = t_packing_list
+      contents_bin               = t_attachment
+      contents_txt               = it_message
+      receivers                  = t_receivers
+    EXCEPTIONS
+      too_many_receivers         = 1
+      document_not_sent          = 2
+      document_type_not_exist    = 3
+      operation_no_authorization = 4
+      parameter_error            = 5
+      x_error                    = 6
+      enqueue_error              = 7
+      OTHERS                     = 8.
+
+  ld_error = sy-subrc.
+
+  LOOP AT t_receivers.
+    ld_receiver = t_receivers-retrn_code.
+  ENDLOOP.
+ENDFORM.
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZDD</font>
+<font color ="#0000FF">*004</font>
+<font color ="#0000FF">*005</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

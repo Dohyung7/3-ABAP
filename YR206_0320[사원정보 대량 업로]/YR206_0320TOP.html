@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0320TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0320TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0320TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0320TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+
+
+TABLES : yt206_0020, dd07t.
+
+
+DATA : BEGIN OF gs_disp,
+         stat       TYPE icon-id,
+         pernr      TYPE yt206_0020-pernr,
+         emnam      TYPE yt206_0020-emnam,
+         sexty      TYPE yt206_0020-sexty,
+         sexty_text TYPE dd07t-ddtext,
+         entdt      TYPE yt206_0020-entdt,
+         grade      TYPE yt206_0020-grade,
+         grade_text TYPE dd07t-ddtext,
+         bthdt      TYPE yt206_0020-bthdt,
+         erdat      TYPE yt206_0020-erdat,
+         erzet      TYPE yt206_0020-erzet,
+         ernam      TYPE yt206_0020-ernam,
+         result     TYPE char255,
+
+
+       END OF gs_disp.
+
+DATA :BEGIN OF gs_pernr,
+        pernr TYPE yt206_0020-pernr,
+      END OF gs_pernr.
+DATA : gt_pernr LIKE TABLE OF gs_pernr.
+
+DATA gt_disp LIKE TABLE OF gs_disp.
+
+DATA gt_dd07t TYPE TABLE OF dd07t WITH HEADER LINE.
+
+
+DATA : gt_index_rows TYPE lvc_t_row,
+       gt_roid       TYPE lvc_t_roid.
+
+DATA : gs_index_rows TYPE lvc_s_row.
+
+
+
+
+
+
+DATA :" go_custom_container TYPE REF TO cl_gui_custom_container,
+       go_grid             TYPE REF TO cl_gui_alv_grid,
+       go_event_receiver   TYPE REF TO lcl_event_receiver,
+       go_docking_container TYPE REF TO cl_gui_docking_container.
+
+DATA : gt_fieldcat  TYPE lvc_t_fcat,
+       gs_fieldcat  TYPE lvc_s_fcat,
+       gs_layout    TYPE lvc_s_layo,
+       gt_sort      TYPE lvc_t_sort,
+       gs_sort      TYPE lvc_s_sort,
+       gt_excluding TYPE ui_functions,
+       gs_excluding TYPE ui_func.
+
+DATA : ok_code TYPE sy-ucomm.
+
+DATA : gv_saved TYPE char01.  " '':저장전, 'x':저장완료,
+
+
+
+PARAMETERS p_path TYPE localfile OBLIGATORY.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

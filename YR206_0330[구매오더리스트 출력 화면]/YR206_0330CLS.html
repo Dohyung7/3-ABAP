@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0330CLS</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0330CLS</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0330CLS</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0330CLS</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+CLASS lcl_event_receiver DEFINITION.
+
+  PUBLIC SECTION.
+
+    METHODS handle_double_click
+                  FOR EVENT double_click OF cl_gui_alv_grid
+      IMPORTING e_row
+                  e_column
+                  es_row_no.
+
+    METHODS : handle_hotspot_click
+                  FOR EVENT hotspot_click OF cl_gui_alv_grid
+      IMPORTING e_row_id
+                  e_column_id.
+
+    METHODS : handle_data_changed
+                  FOR EVENT data_changed OF cl_gui_alv_grid
+      IMPORTING er_data_changed.
+
+    METHODS handle_toolbar
+                  FOR EVENT toolbar OF cl_gui_alv_grid
+      IMPORTING e_object
+                  e_interactive.
+
+    METHODS : handle_user_command
+                  FOR EVENT user_command OF cl_gui_alv_grid
+      IMPORTING e_ucomm.
+
+
+ENDCLASS.
+
+CLASS lcl_event_receiver IMPLEMENTATION.
+
+  METHOD handle_double_click.
+
+<font color ="#0000FF">*    MESSAGE S000 WITH '∂Û¿Œ :' E_ROW-INDEX 'ø≠ :' E_COLUMN-FIELDNAME.</font>
+
+<font color ="#0000FF">*    PERFORM HANDLE_DUOBLE_CLICK U</font>
+
+    PERFORM handle_double_click USING e_row.
+
+
+  ENDMETHOD.
+
+  METHOD handle_hotspot_click.
+
+    PERFORM handle_hotspot_click USING e_row_id
+                                       e_column_id.
+
+  ENDMETHOD.
+
+
+  METHOD handle_data_changed.
+
+    PERFORM handle_data_changed USING er_data_changed.
+
+  ENDMETHOD.
+
+  METHOD handle_toolbar.
+    PERFORM toolbar_part USING e_object
+                               e_interactive.
+  ENDMETHOD.
+
+    METHOD handle_user_command.
+    CALL METHOD cl_gui_cfw=&gt;set_new_ok_code
+      EXPORTING
+        new_code = e_ucomm.
+
+    CASE e_ucomm.
+      WHEN 'MODIFY'.
+        PERFORM data_modify.
+    ENDCASE.
+    CLEAR e_ucomm.
+  ENDMETHOD.
+
+
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0370TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0370TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0370TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0370TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+CONSTANTS : gc_mbrsh         TYPE mara-mbrsh VALUE 'M',
+            gc_mtart         TYPE mara-mtart VALUE 'FERT',
+            gc_msgid_success TYPE bdc_mid VALUE 'M3',
+            gc_msgnr_success TYPE bdc_mnr VALUE '800'.
+
+DATA : go_grid              TYPE REF TO cl_gui_alv_grid,
+       go_docking_container TYPE REF TO cl_gui_docking_container.
+<font color ="#0000FF">*       GO_EVENT_RECEIVER   TYPE REF TO LCL_EVENT_RECEIVER.</font>
+
+DATA : gs_fieldcat  TYPE lvc_s_fcat,
+       gt_fieldcat  TYPE lvc_t_fcat,
+       gs_layout    TYPE lvc_s_layo,
+       gt_sort      TYPE lvc_t_sort,
+       gs_sort      LIKE LINE OF gt_sort,
+       gt_excluding TYPE ui_functions,
+       gs_excluding TYPE ui_func.
+
+DATA : gt_bdc    TYPE TABLE OF bdcdata,
+       gs_bdc    TYPE          bdcdata,
+       gs_option TYPE          ctu_params,
+       gt_msg    TYPE TABLE OF bdcmsgcoll,
+       gs_msg    TYPE          bdcmsgcoll.
+
+DATA : gt_fcode TYPE TABLE OF sy-ucomm.
+
+DATA : ok_code TYPE sy-ucomm.
+
+DATA : BEGIN OF gs_disp,
+
+         stat    TYPE icon-id,           "ป๓ลย
+         matnr   TYPE mara-matnr,
+         maktx   TYPE makt-maktx,
+         mtart   TYPE rmmg1-mtart,
+         meins   TYPE mara-meins,
+         matkl   TYPE mara-matkl,
+         ekgrp   TYPE marc-ekgrp,
+         dismm   TYPE marc-dismm,
+         bklas   TYPE mbew-bklas,
+         stprs_1 TYPE CHAR10,
+         peinh_1 TYPE ckmmat_display-peinh_1,
+         vprsv_1 TYPE ckmmat_display-vprsv_1,
+         werks   TYPE rmmg1-werks,
+         result  TYPE char255,
+
+       END OF gs_disp.
+DATA : gt_disp LIKE TABLE OF gs_disp.
+
+SELECTION-SCREEN BEGIN OF BLOCK bl1 WITH FRAME TITLE TEXT-t01.
+PARAMETERS p_path TYPE localfile OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK bl1.
+
+SELECTION-SCREEN BEGIN OF BLOCK bl2 WITH FRAME TITLE TEXT-t02.
+PARAMETERS : p_plnt TYPE werks DEFAULT '1210'.
+SELECTION-SCREEN END OF BLOCK bl2.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

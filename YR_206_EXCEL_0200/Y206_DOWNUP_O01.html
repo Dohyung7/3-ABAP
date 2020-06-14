@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Y206_DOWNUP_O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: Y206_DOWNUP_O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          Y230_DOWNUP_O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  STATUS_0100  OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE status_0100 OUTPUT.
+  IF gv_ucomm = 'FC03'.
+    CLEAR: gt_menutab, gt_menutab[].
+    PERFORM set_toolbar USING: 'SAVE'.
+    SET PF-STATUS 'STATUS_0100' EXCLUDING gt_menutab.
+    SET TITLEBAR  'TITLE_0100'.
+  ELSE.
+    SET PF-STATUS 'STATUS_0100'.
+    SET TITLEBAR  'TITLE_0100'.
+  ENDIF.
+ENDMODULE.                 " STATUS_0100  OUTPUT
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CREATE_CONTAINER  OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE create_container OUTPUT.
+  DATA : lv_cnt TYPE dec10.
+
+  IF go_container IS INITIAL.
+    CREATE OBJECT go_container
+      EXPORTING
+        container_name              = gv_container
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5.
+    IF sy-subrc NE 0.
+      CALL FUNCTION 'POPUP_TO_INFORM'
+        EXPORTING
+          titel = gv_repid
+          txt2  = sy-subrc
+          txt1  = 'The control could not be created'(510).
+    ENDIF.
+  ENDIF.
+
+
+  IF go_grid IS INITIAL.
+    IF cl_gui_alv_grid=&gt;offline( ) IS INITIAL.
+      CREATE OBJECT go_grid
+        EXPORTING
+          i_parent      = go_container
+          i_appl_events = 'X'.
+    ENDIF.
+
+    PERFORM set_grid_attribute.
+    PERFORM grid_display.
+
+    DESCRIBE TABLE &lt;gt_table&gt; LINES lv_cnt.
+    MESSAGE s000 WITH lv_cnt '건의 데이터가 조회되었습니다.'.
+
+  ELSE.
+    PERFORM refresh_display.
+  ENDIF.
+
+ENDMODULE.                 " CREATE_CONTAINER  OUTPUT
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

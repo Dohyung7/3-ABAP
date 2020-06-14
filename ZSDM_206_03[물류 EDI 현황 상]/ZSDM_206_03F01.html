@@ -1,0 +1,656 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_03F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_03F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZSDM_206_03F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZSDM_206_03F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*FORM set_init_data .</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*ENDFORM.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_INIT_SCREEN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*FORM set_init_screen .</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  LOOP AT SCREEN INTO screen.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF p_ra1 = 'X'.</font>
+<font color ="#0000FF">*      gv_test = '123'.</font>
+<font color ="#0000FF">*      SET PARAMETER ID 'TEST206' FIELD gv_test.</font>
+<font color ="#0000FF">*      aa = '123'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ELSEIF p_ra2 = 'X'.</font>
+<font color ="#0000FF">*      gv_test = '456'.</font>
+<font color ="#0000FF">*      SET PARAMETER ID 'TEST206' FIELD gv_test.</font>
+<font color ="#0000FF">*      aa = '456'.</font>
+<font color ="#0000FF">*    ELSEIF p_ra3 = 'X'.</font>
+<font color ="#0000FF">*      gv_test = '789'.</font>
+<font color ="#0000FF">*      SET PARAMETER ID 'TEST206' FIELD gv_test.</font>
+<font color ="#0000FF">*      aa = '789'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*ENDFORM.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_alv_0100 .
+
+  IF go_custom_container IS INITIAL.
+
+<font color ="#0000FF">* 인스턴스 생성</font>
+    PERFORM create_object.
+
+<font color ="#0000FF">* 필드카탈로그 셋팅</font>
+    PERFORM set_fieldcat.
+
+<font color ="#0000FF">*레이아웃 셋팅</font>
+    PERFORM set_layout.
+
+    PERFORM set_event.
+
+<font color ="#0000FF">* Grid Display</font>
+    PERFORM display_grid.
+
+  ELSE.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_object .
+
+  CREATE OBJECT go_custom_container
+    EXPORTING
+      container_name = 'GO_CUSTOM_CONTAINER'.
+
+  CREATE OBJECT go_grid
+    EXPORTING
+      i_parent = go_custom_container.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fieldcat .
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'DOCUMENT_TYPE'.
+  gs_fieldcat-coltext = '문서유형'.
+<font color ="#0000FF">*  GS_FIELDCAT-OUTPUTLEN = '12'.</font>
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'DOCUMENT_NUM'.
+  gs_fieldcat-coltext = '문서번호'.
+  gs_fieldcat-key = 'X'.
+  gs_fieldcat-hotspot = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'HISTORY'.
+  gs_fieldcat-coltext = '내역'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'DATE'.
+  gs_fieldcat-coltext = '일자'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STAT'.
+  gs_fieldcat-coltext = '상태'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-zebra = 'X'.
+  gs_layout-sel_mode = 'D'.
+  gs_layout-cwidth_opt = 'X'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_event .
+
+  CREATE OBJECT go_event_receiver.
+
+  SET HANDLER go_event_receiver-&gt;handle_double_click FOR go_grid.
+  SET HANDLER go_event_receiver-&gt;handle_hotspot_click FOR go_grid.
+  SET HANDLER go_event_receiver-&gt;handle_data_changed  FOR go_grid.
+
+  CALL METHOD go_grid-&gt;register_edit_event "데이터 별할때 행위를 설정해줘야함
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=&gt;mc_evt_modified.    "18.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM display_grid .
+
+  CALL METHOD go_grid-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout       = gs_layout
+    CHANGING
+      it_outtab       = gt_disp
+      it_fieldcatalog = gt_fieldcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DROP_LIST</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_drop_list .
+
+
+
+
+  CLEAR: ltab, ltab[].
+  ltab-key = 'A'.
+  ltab-text = '재고입고'.
+  APPEND ltab.
+  ltab-key = 'B'.
+  ltab-text = '판매오더'.
+  APPEND ltab.
+  ltab-key = 'C'.
+  ltab-text = '재고출고'.
+  APPEND ltab.
+
+  CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id     = 'TXT_DAY_TYPE'
+      values = ltab[].
+
+
+  GET PARAMETER ID 'TEST206' FIELD lv_get_data. " 메모리 값 가져오기
+
+
+  CASE lv_get_data.
+    WHEN '1'.
+
+      READ TABLE ltab[] INTO ltab INDEX 1.
+      txt_day_type = ltab-key.
+
+    WHEN '2'.
+
+      READ TABLE ltab[] INTO ltab INDEX 2.
+      txt_day_type = ltab-key.
+
+    WHEN '3'.
+
+      READ TABLE ltab[] INTO ltab INDEX 3.
+      txt_day_type = ltab-key.
+
+    WHEN OTHERS.
+  ENDCASE.
+
+  SET PF-STATUS '0100'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*& gt_vbak  gs_vbak " 영업문서: 헤더데이타 = 판매오더</font>
+<font color ="#0000FF">*& gt_mseg  gs_mseg "전표 세그먼트: 자재 = 재고입고</font>
+<font color ="#0000FF">*& gt_makt  gs_makt " 자재 내역 = 재고 자재내역</font>
+<font color ="#0000FF">*& gt_likp  gs_likp "SD 문서: 납품 헤더데이타 = 재고출고</font>
+<font color ="#0000FF">*& gt_lips  gs_lips "SD 문서: 납품: 품목 데이터 = 판매오더에 따른 자재 내역</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*document_type</font>
+<font color ="#0000FF">*document_num</font>
+<font color ="#0000FF">*history</font>
+<font color ="#0000FF">*date</font>
+<font color ="#0000FF">*STAT</font>
+
+FORM get_data .
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_vbak
+    FROM vbak
+    WHERE vkorg = '1210'. " 플랜트
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_mseg1220
+    FROM mseg
+    WHERE  werks = '1220' AND lgort = '122D' . "플랜트 저장위치
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_mseg1230
+    FROM mseg
+    WHERE werks = '1230' AND lgort = '123D' . "플랜트 저장위치
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_makt
+    FROM makt
+    WHERE spras = sy-langu . "사용자 언어
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_likp
+    FROM likp
+    WHERE vkorg = '1210'. "구매조직
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_lips1220
+    FROM lips
+    WHERE  werks = '1220' AND lgort = '122D' .
+<font color ="#0000FF">*    WHERE vkorg = '1210'.</font>
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_lips1230
+    FROM lips.
+<font color ="#0000FF">*    WHERE werks = '1230' AND lgort = '123D' OR werks = '1210'.</font>
+<font color ="#0000FF">*    WHERE vkorg = '1210'.</font>
+
+  CLEAR gs_vbak.
+  LOOP AT gt_vbak INTO gs_vbak.
+
+    gs_disp-document_type = '판매오더'.
+    gs_disp-document_num  = gs_vbak-vbeln.
+
+    READ TABLE gt_lips1220 INTO gs_lips WITH KEY  vgbel = gs_vbak-vbeln.
+
+    IF sy-subrc = 0.
+      gs_disp-history       = gs_lips-arktx.
+    ENDIF.
+
+    gs_disp-date = gs_vbak-erdat.
+    gs_disp-stat = icon_led_green.
+
+    APPEND gs_disp TO gt_disp.
+    APPEND gs_disp TO gt_data_set.
+    CLEAR gs_disp.
+  ENDLOOP.
+
+  LOOP AT gt_mseg1220 INTO gs_mseg.
+
+    gs_disp-document_type = '재고입고1220'.
+    gs_disp-document_num  = gs_mseg-mblnr.
+
+    READ TABLE gt_makt INTO gs_makt WITH KEY  matnr = gs_mseg-matnr.
+
+    IF sy-subrc = 0.
+      gs_disp-history       = gs_makt-maktx.
+    ENDIF.
+
+    gs_disp-date = gs_mseg-budat_mkpf.
+    gs_disp-stat = icon_led_green.
+
+    APPEND gs_disp TO gt_disp.
+    APPEND gs_disp TO gt_data_set.
+    CLEAR gs_disp.
+
+  ENDLOOP.
+
+  LOOP AT gt_mseg1230 INTO gs_mseg.
+
+    gs_disp-document_type = '재고입고1230'.
+    gs_disp-document_num  = gs_mseg-mblnr.
+
+    READ TABLE gt_makt INTO gs_makt WITH KEY  matnr = gs_mseg-matnr.
+
+    IF sy-subrc = 0.
+      gs_disp-history       = gs_makt-maktx.
+    ENDIF.
+
+    gs_disp-date = gs_mseg-budat_mkpf.
+    gs_disp-stat = icon_led_green.
+
+    APPEND gs_disp TO gt_disp.
+    APPEND gs_disp TO gt_data_set.
+    CLEAR gs_disp.
+
+  ENDLOOP.
+
+  LOOP AT gt_likp INTO gs_likp.
+
+    gs_disp-document_type = '재고출고'.
+    gs_disp-document_num  = gs_likp-vbeln.
+
+    READ TABLE gt_lips1230 INTO gs_lips WITH KEY  vbeln = gs_likp-vbeln.
+
+    IF sy-subrc = 0.
+      gs_disp-history       = gs_lips-arktx.
+    ENDIF.
+
+    gs_disp-date = gs_likp-wadat_ist.
+    gs_disp-stat = icon_led_green.
+
+    APPEND gs_disp TO gt_disp.
+    APPEND gs_disp TO gt_data_set.
+    CLEAR gs_disp.
+
+  ENDLOOP.
+
+  GET PARAMETER ID 'TEST206' FIELD lv_get_data. " 메모리 값 가져오기
+
+  CASE lv_get_data.
+    WHEN '1'.
+      CLEAR gt_disp.
+
+
+      LOOP AT gt_data_set INTO gs_disp.
+
+        IF gs_disp-document_type = '재고입고1220'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+        IF gs_disp-document_type = '재고입고1230'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+
+      ENDLOOP.
+
+      SORT gt_disp BY date DESCENDING.
+
+    WHEN '2'.
+
+      CLEAR gt_disp.
+      LOOP AT gt_data_set INTO gs_disp.
+
+        IF gs_disp-document_type = '판매오더'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+        CLEAR gs_disp.
+      ENDLOOP.
+
+      SORT gt_disp BY date DESCENDING.
+
+    WHEN '3'.
+
+      CLEAR gt_disp.
+      LOOP AT gt_data_set INTO gs_disp.
+
+        IF gs_disp-document_type = '재고출고'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+        CLEAR gs_disp.
+      ENDLOOP.
+
+      SORT gt_disp BY date DESCENDING.
+
+    WHEN OTHERS.
+
+      CLEAR gt_disp.
+      MOVE gt_data_set TO gt_disp.
+
+      SORT gt_disp BY date DESCENDING.
+
+  ENDCASE.
+
+  SORT gt_disp BY date DESCENDING. " 상태 먼저 솔트후 날짜 솔트 하기
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_DATA_CHANGED</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      &lt;--P_ER_DATA_CHANGED  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_data_changed  CHANGING p_er_data_changed.
+
+<font color ="#0000FF">*  DATA : LS_MODI TYPE LVC_S_MODI.</font>
+<font color ="#0000FF">*  DATA : LT_MODI TYPE LVC_T_MODI.</font>
+<font color ="#0000FF">*  DATA : LV_VALUE TYPE DD07T-DDTEXT.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  LT_MODI = P_ER_DATA_CHANGED-&gt;MT_GOOD_CELLS.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  LOOP AT LT_MODI INTO LS_MODI.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    AT FIRST.</font>
+<font color ="#0000FF">*    ENDAT.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**    AT NEW ROW_ID.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF LS_MODI-FIELDNAME = 'SEXTY'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      PERFORM GET_SEXTY USING LS_MODI-VALUE</font>
+<font color ="#0000FF">*                  CHANGING LV_VALUE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**      READ TABLE GT_DD07T  WITH KEY DOMNAME = 'YD206_0020'</font>
+<font color ="#0000FF">**                              DOMVALUE_L =  LS_MODI-VALUE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      CALL METHOD P_ER_DATA_CHANGED-&gt;MODIFY_CELL</font>
+<font color ="#0000FF">*        EXPORTING</font>
+<font color ="#0000FF">*          I_ROW_ID    = LS_MODI-ROW_ID</font>
+<font color ="#0000FF">**         I_TABIX     =</font>
+<font color ="#0000FF">*          I_FIELDNAME = 'SEXTY_TEXT'</font>
+<font color ="#0000FF">*          I_VALUE     = LV_VALUE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ELSEIF LS_MODI-FIELDNAME = 'GRADE'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      PERFORM GET_GRADE USING LS_MODI-VALUE</font>
+<font color ="#0000FF">*            CHANGING LV_VALUE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**      READ TABLE GT_DD07T  WITH KEY DOMNAME = 'YD206_0030'</font>
+<font color ="#0000FF">**                                    DOMVALUE_L =  LS_MODI-VALUE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      CALL METHOD P_ER_DATA_CHANGED-&gt;MODIFY_CELL</font>
+<font color ="#0000FF">*        EXPORTING</font>
+<font color ="#0000FF">*          I_ROW_ID    = LS_MODI-ROW_ID</font>
+<font color ="#0000FF">**         I_TABIX     =</font>
+<font color ="#0000FF">*          I_FIELDNAME = 'GRADE_TEXT'</font>
+<font color ="#0000FF">*          I_VALUE     = LV_VALUE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    CALL METHOD P_ER_DATA_CHANGED-&gt;MODIFY_CELL</font>
+<font color ="#0000FF">*      EXPORTING</font>
+<font color ="#0000FF">*        I_ROW_ID    = LS_MODI-ROW_ID</font>
+<font color ="#0000FF">**       I_TABIX     =</font>
+<font color ="#0000FF">*        I_FIELDNAME = 'STAT'</font>
+<font color ="#0000FF">*        I_VALUE     = ICON_LED_YELLOW.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**    ENDAT.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    AT END OF ROW_ID.</font>
+<font color ="#0000FF">*    ENDAT.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**    READ TABLE GT_DISP INTO GS_DISP INDEX LS_MODI-ROW_ID.</font>
+<font color ="#0000FF">**    GS_DISP-STAT = ICON_LED_YELLOW.</font>
+<font color ="#0000FF">**    MODIFY GT_DISP FROM GS_DISP INDEX LS_MODI-ROW_ID.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**  CALL METHOD GO_GRID-&gt;REFRESH_TABLE_DISPLAY.</font>
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_DOUBLE_CLICK</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_ROW  text</font>
+<font color ="#0000FF">*      --&gt;P_E_COLUMN  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_double_click  USING    p_e_row
+                                   p_e_column.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DOCUMENT_TYPE_CHANGE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM document_type_change .
+
+  CASE txt_day_type.
+    WHEN 'A'.
+      CLEAR gt_disp.
+
+
+      LOOP AT gt_data_set INTO gs_disp.
+
+        IF gs_disp-document_type = '재고입고1220'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+        IF gs_disp-document_type = '재고입고1230'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+
+      ENDLOOP.
+
+      SORT gt_disp BY date DESCENDING.
+
+      CALL METHOD go_grid-&gt;refresh_table_display.
+
+
+    WHEN 'B'.
+
+      CLEAR gt_disp.
+      LOOP AT gt_data_set INTO gs_disp.
+
+        IF gs_disp-document_type = '판매오더'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+        CLEAR gs_disp.
+      ENDLOOP.
+
+      SORT gt_disp BY date DESCENDING.
+
+      CALL METHOD go_grid-&gt;refresh_table_display.
+
+    WHEN 'C'.
+
+      CLEAR gt_disp.
+      LOOP AT gt_data_set INTO gs_disp.
+
+        IF gs_disp-document_type = '재고출고'.
+          APPEND gs_disp TO gt_disp.
+        ENDIF.
+        CLEAR gs_disp.
+      ENDLOOP.
+
+      SORT gt_disp BY date DESCENDING.
+
+      CALL METHOD go_grid-&gt;refresh_table_display.
+
+    WHEN OTHERS.
+
+      CLEAR gt_disp.
+      MOVE gt_data_set TO gt_disp.
+
+      SORT gt_disp BY date DESCENDING.
+
+      CALL METHOD go_grid-&gt;refresh_table_display.
+
+  ENDCASE.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form READ_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_ROW_ID  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM read_data  USING    ps_row TYPE lvc_s_row.
+
+  READ TABLE gt_disp INTO gs_disp INDEX ps_row-index.
+
+  CASE gs_disp-document_type.
+    WHEN '판매오더'.
+      SET PARAMETER ID 'AUN' FIELD gs_disp-document_num.
+      CALL TRANSACTION 'VA03'.
+
+    WHEN '재고입고1220'.
+
+      SET PARAMETER ID 'MBN' FIELD gs_disp-document_num.
+      CALL TRANSACTION 'MIGO'.
+
+    WHEN '재고입고1230'.
+
+      SET PARAMETER ID 'MBN' FIELD gs_disp-document_num.
+      CALL TRANSACTION 'MIGO'.
+
+    WHEN '재고출고'.
+
+      SET PARAMETER ID 'VL' FIELD gs_disp-document_num.
+      CALL TRANSACTION 'VL03N'.
+
+    WHEN OTHERS.
+  ENDCASE.
+
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

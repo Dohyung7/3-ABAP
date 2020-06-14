@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0340</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0340</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  레포트 YR206_0340</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0340</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT YR206_0340 MESSAGE-ID YM206.
+
+PARAMETERS : P_EBELN TYPE EKKO-EBELN,
+             P_VERKF TYPE EKKO-VERKF.
+
+
+START-OF-SELECTION.
+
+  DATA : LS_HEADER  TYPE BAPIMEPOHEADER,
+         LS_HEADERX TYPE BAPIMEPOHEADERX,
+         LT_RETURN  TYPE TABLE OF BAPIRET2,
+         LS_RETURN  TYPE BAPIRET2,
+         LV_ERR     TYPE C,
+         LV_MSG     TYPE CHAR255.
+
+<font color ="#0000FF">* 변경될 값 적용</font>
+  LS_HEADER-SALES_PERS = P_VERKF.
+
+<font color ="#0000FF">* 변경할 필드 지정</font>
+  LS_HEADERX-SALES_PERS = 'X'.
+
+  CALL FUNCTION 'BAPI_PO_CHANGE'
+    EXPORTING
+      PURCHASEORDER = P_EBELN
+      POHEADER      = LS_HEADER
+      POHEADERX     = LS_HEADERX
+    TABLES
+      RETURN        = LT_RETURN.
+
+<font color ="#0000FF">* 에러 취합</font>
+  LOOP AT LT_RETURN INTO LS_RETURN
+                    WHERE TYPE EQ 'E'
+                       OR TYPE EQ 'A'.
+    LV_ERR = 'X'.
+    CONCATENATE LV_MSG LS_RETURN-MESSAGE INTO LV_MSG.
+
+  ENDLOOP.
+
+  IF LV_ERR IS INITIAL.
+    "에러가 없을 경우 COMMIT
+    CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'.
+
+  ELSE.
+    "에러 발생 시 메시지 처리
+    MESSAGE S000 WITH LV_MSG.
+  ENDIF.
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM206</font>
+<font color ="#0000FF">*000</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

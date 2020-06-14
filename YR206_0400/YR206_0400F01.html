@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0400F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0400F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR229_0570F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA .
+
+ SELECT * INTO CORRESPONDING FIELDS OF TABLE GT_DISP
+   FROM COSP_BAK
+   WHERE GJAHR = P_YEAR
+   AND    TWAER = 'EUR'.
+
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ALV .
+  IF GO_DOCKING_CONTAINER IS INITIAL.
+
+<font color ="#0000FF">*INSTANCE 생성</font>
+    PERFORM CRT_INSTANCE.
+
+<font color ="#0000FF">*FIELDCAT 설정</font>
+    PERFORM SET_FIELDCAT.
+
+<font color ="#0000FF">*LAYOUT 설정</font>
+    PERFORM SET_LAYOUT.
+
+<font color ="#0000FF">*EVENT METHOD 호출</font>
+<font color ="#0000FF">*    PERFORM CALL_EVENT_METHOD.</font>
+
+<font color ="#0000FF">*CALL METHOD</font>
+    PERFORM CALL_METHOD.
+
+  ELSE.
+    CALL METHOD GO_GRID-&gt;REFRESH_TABLE_DISPLAY.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CRT_INSTANCE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CRT_INSTANCE .
+  CREATE OBJECT GO_DOCKING_CONTAINER
+    EXPORTING
+      SIDE      = CL_GUI_DOCKING_CONTAINER=&gt;DOCK_AT_LEFT
+      EXTENSION = 1000.
+
+  CREATE OBJECT GO_GRID
+    EXPORTING
+      I_PARENT = GO_DOCKING_CONTAINER.
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT .
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'OBJNR'.
+  GS_FIELDCAT-COLTEXT = 'OBJNR'.
+  GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+   CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'GJAHR'.
+  GS_FIELDCAT-COLTEXT = 'GJAHR'.
+  GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+   CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WRTTP'.
+  GS_FIELDCAT-COLTEXT = 'WRTTP'.
+  GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'KSTAR'.
+  GS_FIELDCAT-COLTEXT = 'KSTAR'.
+  GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+    CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'SUM'.
+  GS_FIELDCAT-COLTEXT = 'SUM'.
+  GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+   CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG001'.
+  GS_FIELDCAT-COLTEXT = 'WTG001'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG002'.
+  GS_FIELDCAT-COLTEXT = 'WTG002'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG003'.
+  GS_FIELDCAT-COLTEXT = 'WTG003'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG004'.
+  GS_FIELDCAT-COLTEXT = 'WTG004'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG005'.
+  GS_FIELDCAT-COLTEXT = 'WTG005'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG006'.
+  GS_FIELDCAT-COLTEXT = 'WTG006'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG007'.
+  GS_FIELDCAT-COLTEXT = 'WTG007'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG008'.
+  GS_FIELDCAT-COLTEXT = 'WTG008'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG009'.
+  GS_FIELDCAT-COLTEXT = 'WTG009'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG010'.
+  GS_FIELDCAT-COLTEXT = 'WTG010'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG011'.
+  GS_FIELDCAT-COLTEXT = 'WTG011'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG012'.
+  GS_FIELDCAT-COLTEXT = 'WTG012'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG013'.
+  GS_FIELDCAT-COLTEXT = 'WTG013'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG014'.
+  GS_FIELDCAT-COLTEXT = 'WTG014'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG015'.
+  GS_FIELDCAT-COLTEXT = 'WTG015'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WTG016'.
+  GS_FIELDCAT-COLTEXT = 'WTG016'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+     CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'TWAER'.
+  GS_FIELDCAT-COLTEXT = 'TWAER'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+<font color ="#0000FF">***GS_LAYOUT-ZEBRA = 'X'.  " 얼룩말    " STYLEFNAME 사용하면 ZEBRA도 사용시 헷갈림</font>
+  GS_LAYOUT-STYLEFNAME = 'CELLTAB'.
+  GS_LAYOUT-SEL_MODE = 'D'. " 드래그 가능
+  GS_LAYOUT-CWIDTH_OPT = 'A'." 레코드 크기많큼 칸 크기 증가
+  GS_LAYOUT-COL_OPT = 'X'. " FIELD 명 만큼 칸 크기 증가
+  GS_LAYOUT-NO_ROWINS = 'X'. "ALV상에서 행을 추가하거나 제거하는 아이콘을 삭제하
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CALL_METHOD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CALL_METHOD .
+  CALL METHOD GO_GRID-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      IS_LAYOUT       = GS_LAYOUT
+    CHANGING
+      IT_OUTTAB       = GT_DISP
+      IT_FIELDCATALOG = GT_FIELDCAT.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

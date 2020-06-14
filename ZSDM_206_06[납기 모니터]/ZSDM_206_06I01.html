@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_06I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_06I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZSDM_206_04I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZSDM_206_04I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit_0100 INPUT.
+
+  LEAVE TO SCREEN 0.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT_0200  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit_0200 INPUT.
+  LEAVE TO SCREEN 0.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0100 INPUT.
+  PERFORM list_event USING ok_code.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0200  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0200 INPUT.
+
+  CASE ok_code.
+    WHEN 'SAVE'.
+
+      DATA : ls_0020 LIKE zsdm_t_206_01.
+
+      MOVE-CORRESPONDING gs_disp TO ls_0020.
+
+      MODIFY zsdm_t_206_01 FROM ls_0020.
+
+      IF sy-subrc = 0.
+        COMMIT WORK.
+        CLEAR gs_disp.
+        MESSAGE s003. "정상처리 되었습니다.
+
+
+        MOVE-CORRESPONDING gs_disp TO gs_disp.
+<font color ="#0000FF">*        MODIFY gt_disp FROM gs_disp .</font>
+        LEAVE TO SCREEN 0.  " 전화면으로 돌아가라 즉 스크린  0100 을 다시 실행
+      ELSE.
+        ROLLBACK WORK.
+        MESSAGE i004 DISPLAY LIKE 'E'. "데이터 베이스 저장 중에 오류가 발생하였습니다.
+      ENDIF.
+
+  ENDCASE.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

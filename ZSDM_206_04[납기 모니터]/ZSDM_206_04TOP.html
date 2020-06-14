@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_04TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_04TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZSDM_206_04TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZSDM_206_04TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+TABLES : zsdm_t_206_011, zsdm_t_206_01.
+
+DATA : aa TYPE char255,
+       bb TYPE char255,
+       cc TYPE char255.
+
+DATA : BEGIN OF gs_disp,
+         kunnr TYPE kna1-kunnr, "고객 번호
+         land1 TYPE kna1-land1, "국가 키
+         name1 TYPE kna1-name1, "이름 1
+         stras TYPE kna1-stras, "도시
+         mcod3 TYPE kna1-mcod3, "매치코드 검색을 위한 검색어
+         stat  TYPE icon-id,    "상태
+       END OF gs_disp.
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*ZSDM_T_206_012</font>
+
+
+DATA : BEGIN OF gs_disp1,
+         kunnr TYPE kna1-kunnr, "고객 번호
+         land1 TYPE kna1-land1, "국가 키
+         name1 TYPE kna1-name1, "이름 1
+         stras TYPE kna1-stras, "도시
+         mcod3 TYPE kna1-mcod3, "매치코드 검색을 위한 검색어
+         stat  TYPE icon-id,    "상태
+       END OF gs_disp1.
+
+DATA gt_disp LIKE TABLE OF gs_disp.
+DATA gt_disp2 LIKE TABLE OF gs_disp.
+
+DATA : gv_carrid2 TYPE char255.
+
+<font color ="#0000FF">*GET PARAMETER ID 'TEST206' FIELD gv_carrid2.</font>
+
+DATA : go_custom_container TYPE REF TO cl_gui_custom_container,
+       go_grid             TYPE REF TO cl_gui_alv_grid.
+
+DATA : gt_fieldcat TYPE lvc_t_fcat,
+       gs_fieldcat TYPE lvc_s_fcat,
+       gs_layout   TYPE lvc_s_layo.
+
+DATA : BEGIN OF gs_kna1, "고객마스터의 일반데이타
+         kunnr TYPE kna1-kunnr, "고객 번호
+         land1 TYPE kna1-land1, "국가 키
+         stras TYPE kna1-stras, "도시
+         name1 TYPE kna1-name1, "이름 1
+         mcod3 TYPE kna1-mcod3, "매치코드 검색을 위한 검색어
+       END OF gs_kna1.
+
+DATA : BEGIN OF gs_kna2, "고객마스터의 일반데이타
+         kunnr TYPE kna1-kunnr, "고객 번호
+         land1 TYPE kna1-land1, "국가 키
+         stras TYPE kna1-stras, "도시
+         name1 TYPE kna1-name1, "이름 1
+         mcod3 TYPE kna1-mcod3, "매치코드 검색을 위한 검색어
+       END OF gs_kna2.
+
+DATA : gt_kna1 LIKE TABLE OF gs_kna1.
+
+DATA : gt_fcode TYPE TABLE OF sy-ucomm.
+
+DATA : ok_code TYPE sy-ucomm.
+
+
+<font color ="#0000FF">************************************************************************************</font>
+
+
+DATA : BEGIN OF gs_disp11,
+         kunnr      TYPE vbak-kunnr,
+         werks      TYPE lips-werks,
+         vbeln      TYPE vbak-vbeln,
+         name1      TYPE kna1-name1,
+         erdat      TYPE vbak-erdat,
+         lfdat      TYPE likp-lfdat,
+         gidat      TYPE vbak-erdat,
+         unw_remark TYPE bp001-unw_remark,
+         sdtat      TYPE char255,
+         gigap      TYPE char255,
+         stat       TYPE icon-id,
+         lips_vbeln TYPE lips-vbeln, "납품키
+         index      TYPE lvc_index,
+       END OF gs_disp11.
+
+DATA gt_disp11 LIKE TABLE OF gs_disp11.
+DATA gt_data_set11 LIKE TABLE OF gs_disp11.
+
+
+DATA : gs_index_rows TYPE lvc_s_row.
+
+
+<font color ="#0000FF">*VBAK-VBELN 키</font>
+
+DATA : BEGIN OF gs_vbak11, "영업문서: 헤더데이타
+         kunnr TYPE vbak-kunnr, "판매처 키
+         vbeln TYPE vbak-vbeln, "판매 문서
+         erdat TYPE vbak-erdat, "레코드생성일
+         vdatu TYPE vbak-vdatu, "납품 요청일
+       END OF gs_vbak11.
+
+DATA gt_vbak11 LIKE TABLE OF gs_vbak11.
+DATA gt_vbak21 LIKE TABLE OF gs_vbak11.
+
+
+DATA : BEGIN OF gs_lips11, "SD 문서: 납품: 품목 데이터
+         vbeln TYPE lips-vbeln, "납품 키
+         posnr TYPE lips-posnr, "납품품목 키
+         werks TYPE lips-werks, "플랜트
+         vgbel TYPE lips-vgbel, "참조 문서의 문서 번호 &lt;vbak-vbeln 이거랑 매칭
+       END OF gs_lips11.
+
+DATA : gt_lips1220 LIKE TABLE OF gs_lips11,
+       gt_lips1230 LIKE TABLE OF gs_lips11.
+
+
+DATA : BEGIN OF gs_likp11, "SD 문서: 납품 헤더데이타
+         vbeln TYPE likp-vbeln, "납품
+<font color ="#0000FF">*         vstel     TYPE likp-vstel, "출하 지점/입고 지점</font>
+         lfdat TYPE likp-lfdat, "납품일
+       END OF gs_likp11.
+
+DATA gt_likp11 LIKE TABLE OF gs_likp11.
+
+DATA : BEGIN OF gs_bp00111, "FS 고유 속성, 조직
+         partner    TYPE bp001-partner, "비즈니스 파트너 번호
+         unw_remark TYPE bp001-unw_remark, "불량관련 주석 &lt;&lt; 납품 예정기간
+       END OF gs_bp00111.
+
+DATA gt_bp00111 LIKE TABLE OF gs_bp00111.
+
+DATA : BEGIN OF gs_zsdm_206_0111, "고객 도착일 저장소
+         vbeln TYPE zsdm_206_01-vbeln, "납품 문서번호
+         bpdat TYPE zsdm_206_01-bpdat, "납품 고객 실제 도착 일
+       END OF gs_zsdm_206_0111.
+
+DATA gt_zsdm_206_0111 LIKE TABLE OF gs_zsdm_206_0111.
+
+DATA : BEGIN OF gs_set_kna111,
+         kunnr TYPE kna1-kunnr,
+         ort01 TYPE kna1-ort01,
+         name1 TYPE kna1-name1,
+       END OF gs_set_kna111.
+
+DATA : gt_set_kna111 LIKE TABLE OF gs_set_kna111.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0380TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0380TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0380TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0380TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+DATA : ls_data    TYPE ys206_0040,
+       ls_sub     TYPE ys206_sub1_s,
+       lt_data    LIKE TABLE OF ls_data,
+       gs_data    TYPE yt206_0040,
+       gt_data    LIKE TABLE OF gs_data.
+
+DATA : BEGIN OF gs_disp.
+    include structure <a href ="yt206_0040/dictionary-yt206_0040.html">yt206_0040</a>.
+DATA : celltab TYPE lvc_t_styl,
+       END OF gs_disp.
+
+
+<font color ="#0000FF">*DATA : BEGIN OF gs_disp,</font>
+<font color ="#0000FF">*         key01 TYPE yt206_0040-key01,</font>
+<font color ="#0000FF">*         fld01 TYPE yt206_0040-fld01,</font>
+<font color ="#0000FF">*         fld02 TYPE yt206_0040-fld02,</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*       END OF gs_disp.</font>
+
+DATA : gt_disp LIKE TABLE OF gs_disp.
+
+DATA : go_grid              TYPE REF TO cl_gui_alv_grid,
+       go_docking_container TYPE REF TO cl_gui_docking_container.
+<font color ="#0000FF">*       GO_EVENT_RECEIVER   TYPE REF TO LCL_EVENT_RECEIVER.</font>
+
+DATA : gs_fieldcat  TYPE lvc_s_fcat,
+       gt_fieldcat  TYPE lvc_t_fcat,
+       gs_layout    TYPE lvc_s_layo,
+       gt_sort      TYPE lvc_t_sort,
+       gs_sort      LIKE LINE OF gt_sort,
+       gt_excluding TYPE ui_functions,
+       gs_excluding TYPE ui_func.
+
+ls_data-fld01 = 'A'.
+ls_data-fld02 = 'B'.
+ls_data-fld03 = 'C'.
+ls_data-fld04-sub01 = 'D'.
+ls_data-fld04-sub02 = 'E'.
+ls_data-fld04-sub03 = 'F'.
+
+CLEAR ls_sub.
+
+ls_sub-sub01 = 'G'.
+ls_sub-sub02 = 'H'.
+ls_sub-sub03 = 'I'.
+
+APPEND ls_sub TO ls_data-fld05.
+
+CLEAR ls_sub.
+
+ls_sub-sub01 = 'J'.
+ls_sub-sub02 = 'K'.
+ls_sub-sub03 = 'L'.
+
+APPEND ls_sub TO ls_data-fld05.
+
+APPEND ls_data TO lt_data.
+
+CLEAR ls_data.
+
+ls_data-fld01 = '1'.
+ls_data-fld02 = '2'.
+ls_data-fld03 = '3'.
+ls_data-fld04-sub01 = '4'.
+ls_data-fld04-sub02 = '5'.
+ls_data-fld04-sub03 = '6'.
+
+CLEAR ls_sub.
+
+ls_sub-sub01 = '7'.
+ls_sub-sub02 = '8'.
+ls_sub-sub03 = '9'.
+
+APPEND ls_sub TO ls_data-fld05.
+
+CLEAR ls_sub.
+
+ls_sub-sub01 = '10'.
+ls_sub-sub02 = '11'.
+ls_sub-sub03 = '12'.
+
+APPEND ls_sub TO ls_data-fld05.
+
+APPEND ls_data TO lt_data.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

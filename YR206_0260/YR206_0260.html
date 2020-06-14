@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0260</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0260</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR624_0300</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT YR206_0260 MESSAGE-ID YM229.
+
+include <a href ="yr206_0260top.html">YR206_0260TOP</a>.
+<font color ="#0000FF">*INCLUDE YR2293500TOP.</font>
+include <a href ="yr206_0260i01.html">YR206_0260I01</a>.
+<font color ="#0000FF">*INCLUDE YR2293500I01.</font>
+include <a href ="yr206_0260o01.html">YR206_0260O01</a>.
+<font color ="#0000FF">*INCLUDE YR2293500O01.</font>
+include <a href ="yr206_0260f01.html">YR206_0260F01</a>.
+<font color ="#0000FF">*INCLUDE YR2293500F01.</font>
+
+START-OF-SELECTION.
+
+PERFORM GET_DATA.
+
+CALL SCREEN 0100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* 0100 --&gt; TITLE</font>
+<font color ="#0000FF">* 0100 --&gt; TITLE</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM229</font>
+<font color ="#0000FF">*002</font>
+<font color ="#0000FF">*005</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

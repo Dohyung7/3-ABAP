@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0280</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0280</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0230</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT YR206_0280 MESSAGE-ID YM206.
+
+include <a href ="yr206_0280top.html">YR206_0280TOP</a>.
+include <a href ="yr206_0280i01.html">YR206_0280I01</a>.
+include <a href ="yr206_0280o01.html">YR206_0280O01</a>.
+include <a href ="yr206_0280f01.html">YR206_0280F01</a>.
+
+START-OF-SELECTION.
+
+PERFORM GET_DATA1.
+
+PERFORM GET_DATA.
+
+CALL SCREEN '0100'.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* 0100 --&gt; 스크린린</font>
+<font color ="#0000FF">* 0200 --&gt; 스크린</font>
+<font color ="#0000FF">* 0100 --&gt; 스크린린</font>
+<font color ="#0000FF">* 0200 --&gt; 스크린</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM206</font>
+<font color ="#0000FF">*002</font>
+<font color ="#0000FF">*003</font>
+<font color ="#0000FF">*004</font>
+<font color ="#0000FF">*006</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

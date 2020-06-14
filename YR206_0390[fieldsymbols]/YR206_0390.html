@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0390</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0390</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  fieldsymbols</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0390</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT yr206_0390.
+
+FIELD-SYMBOLS &lt;fs&gt; TYPE char10.
+
+DATA : lv_data  TYPE char10,
+       lv_data2 TYPE char10.
+
+ASSIGN lv_data TO &lt;fs&gt;.
+
+&lt;fs&gt; = 'ABC'.
+
+ASSIGN lv_data2 TO &lt;fs&gt;.
+
+&lt;fs&gt; = 'DEF'.
+
+DATA : lt_data  TYPE TABLE OF yt206_0040,
+       ls_data  TYPE          yt206_0040,
+       lv_fname TYPE char100.
+
+FIELD-SYMBOLS : &lt;fs_data&gt;  TYPE yt206_0040,
+                &lt;fs_value&gt; TYPE char100.
+
+SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE lt_data
+  FROM yt206_0040.
+
+
+LOOP AT lt_data ASSIGNING &lt;fs_data&gt;.
+
+  &lt;fs_data&gt;-fld02 = 'X'.
+
+  WRITE : &lt;fs_data&gt;.
+
+ENDLOOP.
+
+lv_fname = 'ls_data-fld02'.
+ASSIGN (lv_fname) TO &lt;fs_value&gt;.
+<font color ="#0000FF">*ASSIGN lv_fname TO &lt;fs_value&gt;.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

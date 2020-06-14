@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0270TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0270TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR624_0300_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+TABLES : EKKO, EKPO, YT206_0030, MAKT, T161T, MBEW.
+
+<font color ="#0000FF">*DATA : BEGIN OF GS_DISP,</font>
+<font color ="#0000FF">*         EBELN TYPE EKKO-EBELN,</font>
+<font color ="#0000FF">*         BUKRS TYPE EKKO-BUKRS,</font>
+<font color ="#0000FF">*         BSART TYPE EKKO-BSART,</font>
+<font color ="#0000FF">*         LIFNR TYPE EKKO-LIFNR,</font>
+<font color ="#0000FF">*         BSTYP TYPE EKKO-BSTYP,</font>
+<font color ="#0000FF">*         MENGE TYPE EKPO-MENGE,</font>
+<font color ="#0000FF">*         MATNR TYPE EKPO-MATNR,</font>
+<font color ="#0000FF">*         AEDAT TYPE EKPO-AEDAT,</font>
+<font color ="#0000FF">*         BATXT TYPE T161T-BATXT,</font>
+<font color ="#0000FF">*         MAKTX TYPE MAKT-MAKTX,</font>
+<font color ="#0000FF">*         VERPR TYPE MBEW-VERPR,</font>
+<font color ="#0000FF">*       END OF GS_DISP.</font>
+<font color ="#0000FF">*</font>
+
+ DATA : BEGIN OF GS_DISP,
+
+     BUKRS TYPE EKKO-BUKRS  ,
+     EBELN TYPE EKKO-EBELN  ,
+     BSTYP TYPE EKKO-BSTYP  ,
+     BSART TYPE EKKO-BSART  ,
+     BATXT TYPE T161T-BATXT ,
+     LIFNR TYPE EKKO-LIFNR  ,
+     MATNR TYPE EKPO-MATNR  ,
+     MAKTX TYPE MAKT-MAKTX  ,
+     MENGE TYPE EKPO-MENGE  ,
+     AEDAT TYPE EKPO-AEDAT  ,
+     VERPR TYPE MBEW-VERPR  ,
+     BETRG TYPE I,
+     CHECK TYPE C,
+
+   END OF GS_DISP.
+
+
+DATA : BEGIN OF GS_DISP_0200,
+         EBELN TYPE EKKO-EBELN,
+         BUKRS TYPE EKKO-BUKRS,
+         BSART TYPE EKKO-BSART,
+         LIFNR TYPE EKKO-LIFNR,
+         BSTYP TYPE EKKO-BSTYP,
+         MENGE TYPE EKPO-MENGE,
+         MATNR TYPE EKPO-MATNR,
+         AEDAT TYPE EKPO-AEDAT,
+         BATXT TYPE T161T-BATXT,
+         MAKTX TYPE MAKT-MAKTX,
+       END OF GS_DISP_0200.
+
+DATA : BEGIN OF GS_YT206_0030,
+
+        MANDT TYPE YT206_0030-MANDT ,
+        BUKRS TYPE YT206_0030-BUKRS ,
+        EBELN TYPE YT206_0030-EBELN ,
+        MATNR TYPE YT206_0030-MATNR ,
+        MENGE TYPE YT206_0030-MENGE ,
+        VERPR TYPE YT206_0030-VERPR ,
+        BETRG TYPE YT206_0030-BETRG ,
+        ERDAT TYPE YT206_0030-ERDAT ,
+        ERZET TYPE YT206_0030-ERZET ,
+        ERNAM TYPE YT206_0030-ERNAM ,
+        AEDAT TYPE YT206_0030-AEDAT ,
+        AEZET TYPE YT206_0030-AEZET ,
+        AENAM TYPE YT206_0030-AENAM ,
+
+      END OF GS_YT206_0030.
+
+DATA GT_YT206_0030 LIKE TABLE OF GS_YT206_0030.
+
+DATA GT_DISP_0200 LIKE TABLE OF GS_DISP_0200.
+
+DATA GT_DISP LIKE TABLE OF GS_DISP.
+ DATA GT_DISP1 LIKE TABLE OF GS_DISP.
+ DATA GT_DISP2 LIKE TABLE OF GS_DISP.
+
+
+DATA : GO_CUSTOM_CONTAINER TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+       GO_GRID             TYPE REF TO CL_GUI_ALV_GRID.
+
+DATA : GT_FIELDCAT TYPE LVC_T_FCAT,
+       GS_FIELDCAT TYPE LVC_S_FCAT,
+       GS_LAYOUT   TYPE LVC_S_LAYO.
+
+
+SELECTION-SCREEN BEGIN OF BLOCK BLK1 WITH FRAME
+                                TITLE TEXT-001.
+SELECT-OPTIONS : S_BUKRS FOR EKKO-BUKRS,
+                 S_EBELN FOR EKKO-EBELN,
+                 S_AEDAT FOR EKPO-AEDAT.
+SELECTION-SCREEN END OF BLOCK BLK1.
+
+DATA : OK_CODE TYPE SY-UCOMM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

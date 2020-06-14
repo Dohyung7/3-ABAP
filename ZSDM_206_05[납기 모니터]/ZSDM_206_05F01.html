@@ -1,0 +1,676 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_05F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_05F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZSDM_206_04F01</b></font>
+<hr>
+<pre width="100">
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_alv_0100 .
+
+  IF go_custom_container IS INITIAL.
+
+<font color ="#0000FF">* 인스턴스 생성</font>
+    PERFORM create_object.
+
+<font color ="#0000FF">* 필드카탈로그 셋팅</font>
+    PERFORM set_fieldcat.
+
+<font color ="#0000FF">*레이아웃 셋팅</font>
+    PERFORM set_layout.
+
+    PERFORM set_event.
+
+<font color ="#0000FF">* Grid Display</font>
+    PERFORM display_grid.
+
+  ELSE.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_object .
+
+  CREATE OBJECT go_custom_container
+    EXPORTING
+      container_name = 'GO_CUSTOM_CONTAINER'.
+
+  CREATE OBJECT go_grid
+    EXPORTING
+      i_parent = go_custom_container.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fieldcat .
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'LAND1'.
+  gs_fieldcat-coltext = '국가'.
+<font color ="#0000FF">*  GS_FIELDCAT-OUTPUTLEN = '12'.</font>
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STRAS'.
+  gs_fieldcat-coltext = '지역'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MCOD3'.
+  gs_fieldcat-coltext = '도시'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'NAME1'.
+  gs_fieldcat-coltext = '고객'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'UNW_REMARK'.
+  gs_fieldcat-coltext = '계획납품기간'.
+<font color ="#0000FF">*  GS_FIELDCAT-OUTPUTLEN = '12'.</font>
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'AVGDA'.
+  gs_fieldcat-coltext = '평균납품기간'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'DAGAP'.
+  gs_fieldcat-coltext = '갭'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STAT'.
+  gs_fieldcat-coltext = '상태'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-zebra = 'X'.
+  gs_layout-sel_mode = 'D'.
+  gs_layout-cwidth_opt = 'X'.
+  gs_layout-no_rowins = 'X'. "라인 추가 안생기게함
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_event .
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM display_grid .
+
+  CALL METHOD go_grid-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout       = gs_layout
+    CHANGING
+      it_outtab       = gt_disp
+      it_fieldcatalog = gt_fieldcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DROP_LIST</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_drop_list .
+
+  DATA : vl_char_set TYPE char255.
+  DATA : lv_get_data TYPE char255.
+
+
+  CLEAR: ltab, ltab[].
+  SORT gt_set_kna1 BY name1 ASCENDING.
+  vl_char_set = ''.
+  LOOP AT gt_set_kna1 INTO gs_set_kna1.
+    IF gs_set_kna1-ort01 &lt;&gt; vl_char_set.
+      vl_char_set = gs_set_kna1-ort01.
+      ltab-key = vl_char_set.
+      ltab-text = gs_set_kna1-ort01.
+      APPEND ltab.
+    ENDIF.
+
+
+  ENDLOOP.
+
+  CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id     = 'TXT_DAY_TYPE_1'
+      values = ltab[].
+
+
+  GET PARAMETER ID 'TEST206' FIELD lv_get_data. " 메모리 값 가져오기
+
+<font color ="#0000FF">*  READ TABLE ltab[] INTO ltab WITH KEy key = lv_get_data.</font>
+<font color ="#0000FF">*  txt_day_type_1 = ltab-key.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CLEAR lv_get_data.</font>
+<font color ="#0000FF">*  GET PARAMETER ID 'TEST206' FIELD lv_get_data. " 메모리 값 가져오기</font>
+
+
+  CASE lv_get_data.
+    WHEN '파리'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '파리'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '보르도'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '보르도'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '니스'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '니스'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '아미앵'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '아미앵'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '리옹'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '리옹'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '마르세유'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '마르세유'.
+      txt_day_type_1 = ltab-key.
+    WHEN '낭트'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '낭트'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '부르고뉴'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '부르고뉴'.
+      txt_day_type_1 = ltab-key.
+
+    WHEN '툴르즈'.
+
+      READ TABLE ltab[] INTO ltab WITH KEY key = '툴르즈'."INDEX 9.
+      txt_day_type_1 = ltab-key.
+
+
+
+  ENDCASE.
+
+  CLEAR: ltab, ltab[].
+  vl_char_set = ''.
+  SORT gt_set_kna1 BY name1 ASCENDING.
+  LOOP AT gt_set_kna1 INTO gs_set_kna1.
+    vl_char_set = gs_set_kna1-name1.
+    ltab-key = vl_char_set.
+    ltab-text = gs_set_kna1-name1.
+    APPEND ltab.
+
+  ENDLOOP.
+
+  CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id     = 'TXT_DAY_TYPE_2'
+      values = ltab[].
+
+  SET PF-STATUS '0100'.
+
+  PERFORM list_event USING 'DOCUMENT_TYPE1'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_KNA1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_kna1 .
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_set_kna1
+    FROM kna1
+    WHERE land1 = 'FR' AND kunnr LIKE 'OC-%'.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data .
+<font color ="#0000FF">*gt_kna1 gs_vbak.</font>
+
+  DATA : aa TYPE char255.
+
+  DATA : lv_data5 LIKE vtbbewe-dbervon.
+  DATA : lv_data6 LIKE vtbbewe-dberbis.
+  DATA : lv_data7 TYPE char8.
+  DATA : lv_data8 TYPE char255.
+  DATA : lv_data1 TYPE char8,
+         lv_data2 TYPE char255,
+         lv_data3 TYPE char8.
+
+  DATA : lv_data01 TYPE i.
+  DATA : lv_data02 TYPE i.
+
+  DATA : lv_zsdm_t_206_011 LIKE zsdm_t_206_011.
+
+  DATA : lv_zsdm_t_206_01 LIKE zsdm_t_206_01.
+
+  SELECT *
+    INTO  CORRESPONDING FIELDS OF TABLE gt_kna1
+    FROM kna1
+    WHERE land1 = 'FR' AND kunnr LIKE 'OC-%'.
+
+  SELECT *
+    INTO  CORRESPONDING FIELDS OF TABLE gt_vbak
+    FROM vbak
+    WHERE kunnr LIKE 'OC-%'.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_bp001
+    FROM bp001
+    WHERE partner LIKE 'OC-%'.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_zsdm_t_206_01
+    FROM zsdm_t_206_01
+    WHERE werks = '1220' OR werks = '1230'.
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_zsdm_t_206_02
+    FROM zsdm_t_206_01
+    WHERE werks = '1220' OR werks = '1230'.
+
+  LOOP AT gt_kna1 INTO gs_kna1.
+
+    aa = gs_kna1-stras.
+    aa = aa+0(2).
+    gs_kna1-stras = aa.
+
+    MOVE-CORRESPONDING gs_kna1 TO gs_disp.
+    gs_disp-land1 = '프랑스'.
+
+    READ TABLE gt_bp001 INTO gs_bp001 WITH KEY  partner = gs_kna1-kunnr.
+
+    IF sy-subrc = '0'.
+
+      gs_disp-unw_remark = gs_bp001-unw_remark.
+
+    ENDIF.
+
+
+
+    APPEND gs_disp TO gt_disp2.
+
+  ENDLOOP.
+
+
+  SORT gt_zsdm_t_206_01 BY name1 DESCENDING.
+
+
+
+
+  LOOP AT gt_kna1 INTO gs_kna1.
+    DATA : data1   TYPE char255, sum TYPE i, data_i1 TYPE i, data2 TYPE char8, data_i2 TYPE i.
+
+
+<font color ="#0000FF">*    data1 = gs_zsdm_t_206_01-name1.</font>
+
+
+    DATA : data11 TYPE char255.
+    DATA gt_zsdm_t_206_03 LIKE TABLE OF gs_zsdm_t_206_01.
+
+
+    aa = gs_kna1-stras.
+    aa = aa+0(2).
+    gs_kna1-stras = aa.
+
+    MOVE-CORRESPONDING gs_kna1 TO gs_disp.
+    gs_disp-land1 = '프랑스'.
+
+    READ TABLE gt_bp001 INTO gs_bp001 WITH KEY  partner = gs_kna1-kunnr.
+
+    IF sy-subrc = '0'.
+
+      gs_disp-unw_remark = gs_bp001-unw_remark.
+
+    ENDIF.
+
+    data11 = gs_kna1-name1.
+
+    SELECT *
+      INTO CORRESPONDING FIELDS OF TABLE gt_zsdm_t_206_03
+      FROM zsdm_t_206_01
+      WHERE name1 EQ data11
+      AND ( werks = '1220' OR werks = '1230' ).
+
+    LOOP AT gt_zsdm_t_206_03 INTO gs_zsdm_t_206_01.
+      data_i1 = data_i1 + gs_zsdm_t_206_01-sdtat+0(7).
+      sum = sum + 1.
+
+
+
+    ENDLOOP.
+    data_i2 = data_i1 / sum.
+    data2 = data_i2.
+    gs_disp-avgda = data2.
+    APPEND gs_disp TO gt_disp.
+    CLEAR gt_zsdm_t_206_03.
+    sum = 0.
+    data_i1 = 0.
+    data_i2 = 0.
+
+
+  ENDLOOP.
+
+
+  LOOP AT gt_disp INTO gs_disp.
+
+    IF gs_disp-unw_remark &lt;&gt; ''.
+
+      lv_data02 = gs_disp-avgda."+0(7). "평균납부기간.
+      lv_data01 = gs_disp-unw_remark+0(7). " 앞에 공백 처리 문제로 인한 형변환
+      lv_data1 = lv_data01.
+      lv_data2 = lv_data02.
+
+    ENDIF.
+
+
+    IF lv_data01 &gt; 0.
+      IF lv_data01 &gt;= lv_data02.
+
+        gs_disp-dagap = '계획 내 납품'.
+        gs_disp-stat = icon_led_green.
+
+      ELSE.
+
+        lv_data3 = lv_data1 - lv_data2.
+        lv_data3 = lv_data3+0(7).
+        PERFORM text_day USING lv_data3
+                      CHANGING lv_data8.
+
+        gs_disp-dagap = lv_data8.
+        gs_disp-stat = icon_led_red.
+
+        CLEAR lv_data3.
+        CLEAR lv_data8.
+        CLEAR lv_data01.
+        CLEAR lv_data02.
+
+
+      ENDIF.
+    ENDIF.
+
+    MODIFY gt_disp FROM gs_disp.
+
+    lv_data7 = gs_disp-unw_remark.
+
+    PERFORM text_day USING lv_data7
+                 CHANGING lv_data8.
+
+    gs_disp-unw_remark = lv_data8.
+
+    lv_data7 = gs_disp-avgda.
+
+    PERFORM text_day USING lv_data7
+             CHANGING lv_data8.
+
+    gs_disp-avgda = lv_data8.
+
+
+    MOVE-CORRESPONDING gs_disp TO lv_zsdm_t_206_011.
+
+    MODIFY gt_disp FROM gs_disp.
+    MODIFY zsdm_t_206_011 FROM lv_zsdm_t_206_011.
+
+  ENDLOOP.
+
+  SORT gt_disp BY stat DESCENDING.
+
+  SORT gt_disp BY mcod3 DESCENDING name1 ASCENDING.
+
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form FIMA_DAYS_AND_MONTHS_AND_YEARS</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_LV_DATA5  text</font>
+<font color ="#0000FF">*      --&gt;P_LV_DATA6  text</font>
+<font color ="#0000FF">*      &lt;--P_LV_DATA7  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fima_days_and_months_and_years  USING    p_lv_data5 LIKE vtbbewe-dbervon
+                                              p_lv_data6 LIKE vtbbewe-dberbis
+                                     CHANGING p_lv_data7.
+
+  DATA : lv_change TYPE i.
+
+  CALL FUNCTION 'FIMA_DAYS_AND_MONTHS_AND_YEARS'
+    EXPORTING
+      i_date_from = p_lv_data5
+      i_date_to   = p_lv_data6
+    IMPORTING
+      e_days      = lv_change.
+
+  p_lv_data7 = lv_change. "형 변환
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form TEXT_DAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_LV_DATA7  text</font>
+<font color ="#0000FF">*      &lt;--P_LV_DATA8  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM text_day  USING    p_lv_data7 TYPE char8
+               CHANGING p_lv_data8.
+
+  DATA : lv_data TYPE char10.
+
+  lv_data = '일'.
+
+  CONCATENATE p_lv_data7 lv_data INTO p_lv_data8 SEPARATED BY ' '.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form LIST_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_OK_CODE  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM list_event  USING    p_code.
+
+  RANGES : data FOR kna1-name1.
+
+  DATA : BEGIN OF ls_data1,
+           lv_data1 TYPE char255,
+         END OF ls_data1.
+
+  DATA lt_data1 LIKE TABLE OF ls_data1.
+
+  CLEAR : gs_disp, gt_disp.
+
+  IF p_code EQ 'DOCUMENT_TYPE1'.
+    CLEAR list1[].
+    CLEAR list1.
+
+    IF txt_day_type_1 &lt;&gt; ''.
+      list1-sign = 'I'.
+      list1-option = 'EQ'.
+      list1-low = txt_day_type_1.
+      APPEND list1.
+    ENDIF.
+
+  ELSEIF p_code EQ 'DOCUMENT_TYPE2'.
+    CLEAR list2[].
+    CLEAR list2.
+
+    IF txt_day_type_2 &lt;&gt; ''.
+      list2-sign = 'I'.
+      list2-option = 'EQ'.
+      list2-low = txt_day_type_2.
+      APPEND list2.
+    ENDIF.
+
+  ELSE.
+
+
+
+
+  ENDIF.
+
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_disp
+    FROM zsdm_t_206_011
+    WHERE name1 IN list2
+    AND mcod3 IN list1.
+
+
+  CALL METHOD go_grid-&gt;refresh_table_display.
+
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form BTN_CLICK</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM btn_click .
+
+  DATA : lt_index_rows TYPE lvc_t_row,
+         lt_roid       TYPE lvc_t_roid.
+
+  DATA : ls_index_rows TYPE lvc_s_row.
+  DATA : gv_test TYPE char255.
+
+  DATA : aa TYPE c LENGTH 10.
+
+  DATA : vl_char_set TYPE char255.
+
+
+  CLEAR: ltab, ltab[].
+  SORT gt_set_kna1 BY name1 ASCENDING.
+  vl_char_set = ''.
+  LOOP AT gt_set_kna1 INTO gs_set_kna1.
+    IF gs_set_kna1-ort01 &lt;&gt; vl_char_set.
+      vl_char_set = gs_set_kna1-name1.
+      ltab-key = vl_char_set.
+      ltab-text = gs_set_kna1-name1.
+      APPEND ltab.
+    ENDIF.
+
+
+  ENDLOOP.
+
+
+  "ALV에서 선택라인 확인 (선택라인 확인 무엇이 클릭 되어 있는지)
+  CALL METHOD go_grid-&gt;get_selected_rows
+    IMPORTING
+      et_index_rows = lt_index_rows.
+
+  "메세지 호출
+  IF lt_index_rows IS INITIAL.
+    "S 왼쪽 아래글 I는 팝업 E 왼쪽 아래 오류 메세지로
+    gv_test = ''. "메모리 값 날리기
+    SET PARAMETER ID 'TEST206' FIELD gv_test. " 메모리 값 가져오기
+    CALL TRANSACTION 'ZSDM_206_06'.
+
+
+  ELSE.
+
+    "ALV에서 선택 라인 선택
+
+    READ TABLE lt_index_rows INTO ls_index_rows INDEX 1.
+
+    " 인터널 테이블 에서 선택라인 선택
+
+    READ TABLE gt_disp INTO gs_disp INDEX ls_index_rows-index.
+
+    IF sy-subrc = '0'.
+      READ TABLE ltab INTO ltab WITH KEY key = gs_disp-name1.
+      gv_test = gs_disp-name1.
+      SET PARAMETER ID 'TEST206' FIELD gv_test.
+      CALL TRANSACTION 'ZSDM_206_06'.
+
+    ENDIF.
+
+  ENDIF.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

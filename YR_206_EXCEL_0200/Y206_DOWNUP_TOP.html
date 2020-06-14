@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Y206_DOWNUP_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: Y206_DOWNUP_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          Y230_DOWNUP_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Type-pools</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+TYPE-POOLS icon.
+
+<font color ="#0000FF">*-----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  TABLES                                                               *</font>
+<font color ="#0000FF">*-----------------------------------------------------------------------*</font>
+TABLES: sscrfields, icon, dd03vt.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& GLOVAL VARIABLE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+DATA: ok_code    LIKE sy-ucomm,
+      gv_ok_code LIKE sy-ucomm,
+      gv_err.
+
+
+DATA : BEGIN OF wa_mode,
+         count       LIKE sy-tabix,
+         error       TYPE c,
+         exist(1)    TYPE c,
+         okcnt       LIKE sy-tabix, " 성공 수
+         nocnt       LIKE sy-tabix, " 오류 수
+         cnttxt(12)  TYPE c,   " 수 -&gt; 문자
+         infotxt(70) TYPE c,
+       END OF wa_mode.
+
+
+DATA: gt_ref    TYPE REF TO data,
+      gt_fcat   TYPE lvc_t_fcat,
+      wf_fcat   TYPE lvc_s_fcat OCCURS 0 WITH HEADER LINE,
+      gt_fldcat LIKE lvc_s_fcat OCCURS 0 WITH HEADER LINE.
+
+<font color ="#0000FF">*-----------------------------------------------------------------------*</font>
+<font color ="#0000FF">* ALV DATA - SCREEN 0100</font>
+<font color ="#0000FF">*-----------------------------------------------------------------------*</font>
+CLASS lcl_event_receiver DEFINITION DEFERRED.
+
+DATA: go_container      TYPE REF TO cl_gui_custom_container,
+      gv_container      TYPE scrfname VALUE 'GO_CONTAINER',
+      go_grid           TYPE REF TO cl_gui_alv_grid,
+      gv_repid          LIKE sy-repid,
+      gv_dynnr          LIKE sy-dynnr,
+      go_event_receiver TYPE REF TO lcl_event_receiver,
+      gt_fieldcat       TYPE lvc_t_fcat,
+      gs_layout         TYPE lvc_s_layo,
+      gs_print          TYPE lvc_s_prnt,
+      gs_variant        TYPE disvariant,
+      gs_toolbar        TYPE stb_button,
+      gt_sort           TYPE lvc_t_sort,
+      gv_ucomm          LIKE sy-ucomm,
+      gt_exclude        TYPE ui_functions,
+      gt_color          TYPE lvc_t_scol,
+      gt_cellstl        TYPE lvc_t_styl,
+      gs_cellstl        TYPE lvc_t_styl   WITH HEADER LINE,
+      gt_dropdown       TYPE lvc_t_drop,
+      gs_dropdown       TYPE lvc_s_drop,
+      gv_sw1.
+
+DATA: gv_colps     TYPE i,
+      gv_line      TYPE i,
+      err_flag,
+      gv_init_flag,
+      gt_rows      TYPE lvc_t_row,
+      gs_rows      TYPE lvc_s_row,
+      gs_row       TYPE lvc_s_row,
+      gs_col       TYPE lvc_s_col,
+      gs_roid      TYPE lvc_s_roid.
+
+DATA : BEGIN OF gt_menutab OCCURS 10,
+         fcode LIKE sy-ucomm,
+       END OF gt_menutab.
+
+FIELD-SYMBOLS: &lt;data&gt;     TYPE table.
+FIELD-SYMBOLS: &lt;gt_table&gt; TYPE table.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  SELECTION SCREEN                                                    *</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+SELECTION-SCREEN: FUNCTION KEY 1,
+                  FUNCTION KEY 2,
+                  FUNCTION KEY 3.
+<font color ="#0000FF">*</font>
+SELECTION-SCREEN  BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-001.
+PARAMETERS  p_xls LIKE rlgrap-filename    DEFAULT'C:\' OBLIGATORY.
+<font color ="#0000FF">*</font>
+SELECTION-SCREEN  END OF BLOCK b1.
+
+
+SELECTION-SCREEN SKIP 1.
+
+SELECTION-SCREEN BEGIN OF BLOCK b3 WITH FRAME TITLE TEXT-003.
+PARAMETERS tab_name LIKE dd03l-tabname OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK b3.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

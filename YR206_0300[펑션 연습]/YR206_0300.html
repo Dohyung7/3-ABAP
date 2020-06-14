@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0300</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0300</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  펑션 연습</b></font>
+<hr>
+<pre width="100">
+REPORT YR206_0300.
+
+<font color ="#0000FF">*TYPES TRUXS_T_TEXT_DATA(4096) TYPE C OCCURS 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*types : begin of ty_file,</font>
+<font color ="#0000FF">*          PERNR type YT206_0020-PERNR,</font>
+<font color ="#0000FF">*          ENTDT type YT206_0020-ENTDT,</font>
+<font color ="#0000FF">*          EMNAM type YT206_0020-EMNAM,</font>
+<font color ="#0000FF">*          GRADE type YT206_0020-GRADE,</font>
+<font color ="#0000FF">*          SEXTY type YT206_0020-SEXTY,</font>
+<font color ="#0000FF">*        end of ty_file.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DATA : GV_RC      TYPE I,</font>
+<font color ="#0000FF">*       GV_FILE    TYPE LOCALFILE,</font>
+<font color ="#0000FF">*       GT_FILE    TYPE FILETABLE,</font>
+<font color ="#0000FF">*       GV_DATA    TYPE TRUXS_T_TEXT_DATA,</font>
+<font color ="#0000FF">*       G_SALV     TYPE REF TO CL_SALV_TABLE,</font>
+<font color ="#0000FF">*       G_FRONTEND TYPE REF TO CL_GUI_FRONTEND_SERVICES.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DATA : GS_ITAB  TYPE ty_file,</font>
+<font color ="#0000FF">*       GS_T103  TYPE YT206_0020,</font>
+<font color ="#0000FF">*       GT_ITAB  TYPE TABLE OF ty_file,</font>
+<font color ="#0000FF">*       GS_EXCEL TYPE ALSMEX_TABLINE,</font>
+<font color ="#0000FF">*       GT_T103  TYPE TABLE OF YT206_0020,</font>
+<font color ="#0000FF">*       GT_EXCEL TYPE TABLE OF ALSMEX_TABLINE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*FIELD-SYMBOLS &lt;FS&gt;.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*SELECTION-SCREEN BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-000.</font>
+<font color ="#0000FF">*PARAMETERS : P_FILE TYPE LOCALFILE.</font>
+<font color ="#0000FF">*SELECTION-SCREEN END OF BLOCK B1.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*SELECTION-SCREEN BEGIN OF BLOCK B2 WITH FRAME TITLE TEXT-001.</font>
+<font color ="#0000FF">*SELECTION-SCREEN BEGIN OF LINE.</font>
+<font color ="#0000FF">*PARAMETERS : P_ALSM RADIOBUTTON GROUP RD1 DEFAULT 'X'.</font>
+<font color ="#0000FF">*SELECTION-SCREEN COMMENT 4(30) TEXT-C01.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*PARAMETERS : P_TEXT RADIOBUTTON GROUP RD1.</font>
+<font color ="#0000FF">*SELECTION-SCREEN COMMENT 38(30) TEXT-C02.</font>
+<font color ="#0000FF">*SELECTION-SCREEN END OF LINE.</font>
+<font color ="#0000FF">*SELECTION-SCREEN END OF BLOCK B2.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*#---------------------------------------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*INITIALIZATION</font>
+<font color ="#0000FF">*  " OBJECT 생성</font>
+<font color ="#0000FF">*  CREATE OBJECT G_FRONTEND.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**/--------------------------------------------------------------------/*</font>
+<font color ="#0000FF">** START-OF-SELECTION</font>
+<font color ="#0000FF">**/--------------------------------------------------------------------/*</font>
+<font color ="#0000FF">*START-OF-SELECTION.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CHECK P_FILE IS NOT INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  " ALSM_EXCEL_TO_INTERNAL_TABLE 펑션 실행 예제</font>
+<font color ="#0000FF">*  IF P_ALSM = 'X'.</font>
+<font color ="#0000FF">*    PERFORM CALL_FUNC1.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* " TEXT_CONVERT_XLS_TO_SAP 펑션 실행 예제</font>
+<font color ="#0000FF">*  ELSE.</font>
+<font color ="#0000FF">*    PERFORM CALL_FUNC2.</font>
+<font color ="#0000FF">*  ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CHECK GT_ITAB[] IS NOT INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CLEAR GT_T103[].</font>
+<font color ="#0000FF">*  LOOP AT GT_ITAB INTO GS_ITAB.</font>
+<font color ="#0000FF">*    CLEAR GS_T103.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    DO.</font>
+<font color ="#0000FF">*      REPLACE ',' IN GS_ITAB-HSLTT WITH SPACE.</font>
+<font color ="#0000FF">*      IF SY-SUBRC = 0.</font>
+<font color ="#0000FF">*        CONDENSE GS_ITAB-HSLTT NO-GAPS.</font>
+<font color ="#0000FF">*      ELSE.</font>
+<font color ="#0000FF">*        EXIT.</font>
+<font color ="#0000FF">*      ENDIF.</font>
+<font color ="#0000FF">*    ENDDO.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    MOVE-CORRESPONDING GS_ITAB TO GS_T103.</font>
+<font color ="#0000FF">*    APPEND GS_T103 TO GT_T103.</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  PERFORM CREATE_SALV.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**/--------------------------------------------------------------------/*</font>
+<font color ="#0000FF">** AT SELECTION-SCREEN</font>
+<font color ="#0000FF">**/--------------------------------------------------------------------/*</font>
+<font color ="#0000FF">*AT SELECTION-SCREEN ON VALUE-REQUEST FOR P_FILE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  PERFORM GET_FILEPATH.   " 파일 경로 조회</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">**&      Form  GET_FILEPATH</font>
+<font color ="#0000FF">**&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">**       파일 경로 가져오는 로직</font>
+<font color ="#0000FF">**----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*FORM GET_FILEPATH .</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CLEAR : GV_RC, GT_FILE[].</font>
+<font color ="#0000FF">*  CALL METHOD G_FRONTEND-&gt;FILE_OPEN_DIALOG</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      DEFAULT_FILENAME = SPACE</font>
+<font color ="#0000FF">*    CHANGING</font>
+<font color ="#0000FF">*      FILE_TABLE       = GT_FILE</font>
+<font color ="#0000FF">*      RC               = GV_RC</font>
+<font color ="#0000FF">*    EXCEPTIONS</font>
+<font color ="#0000FF">*      OTHERS           = 1.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CLEAR P_FILE.</font>
+<font color ="#0000FF">*  READ TABLE GT_FILE INTO P_FILE INDEX 1.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*ENDFORM.                    " GET_FILEPATH</font>
+<font color ="#0000FF">**&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">**&      Form  CALL_FUNC1</font>
+<font color ="#0000FF">**&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">**       ALSM_EXCEL_TO_INTERNAL_TABLE 펑션 실행 예제</font>
+<font color ="#0000FF">**----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*FORM CALL_FUNC1 .</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  " 엑셀 업로드</font>
+<font color ="#0000FF">*  CLEAR GT_EXCEL[].</font>
+<font color ="#0000FF">*  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      FILENAME                = P_FILE</font>
+<font color ="#0000FF">*      I_BEGIN_COL             = 1</font>
+<font color ="#0000FF">*      I_BEGIN_ROW             = 2</font>
+<font color ="#0000FF">*      I_END_COL               = 6</font>
+<font color ="#0000FF">*      I_END_ROW               = 10000</font>
+<font color ="#0000FF">*    TABLES</font>
+<font color ="#0000FF">*      INTERN                  = GT_EXCEL[]</font>
+<font color ="#0000FF">*    EXCEPTIONS</font>
+<font color ="#0000FF">*      INCONSISTENT_PARAMETERS = 1</font>
+<font color ="#0000FF">*      UPLOAD_OLE              = 2</font>
+<font color ="#0000FF">*      OTHERS                  = 3.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  " 업로드된 엑셀을 LINE/COL 별로 MOVE</font>
+<font color ="#0000FF">*  IF GT_EXCEL[] IS NOT INITIAL.</font>
+<font color ="#0000FF">*    CLEAR GT_ITAB[].</font>
+<font color ="#0000FF">*    LOOP AT GT_EXCEL INTO GS_EXCEL.</font>
+<font color ="#0000FF">*      UNASSIGN &lt;FS&gt;.</font>
+<font color ="#0000FF">*      ASSIGN COMPONENT GS_EXCEL-COL OF STRUCTURE GS_ITAB TO &lt;FS&gt;.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      IF &lt;FS&gt; IS ASSIGNED.</font>
+<font color ="#0000FF">*        &lt;FS&gt; = GS_EXCEL-VALUE.</font>
+<font color ="#0000FF">*      ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      AT END OF ROW.</font>
+<font color ="#0000FF">*        APPEND GS_ITAB TO GT_ITAB.</font>
+<font color ="#0000FF">*        CLEAR GS_ITAB.</font>
+<font color ="#0000FF">*      ENDAT.</font>
+<font color ="#0000FF">*    ENDLOOP.</font>
+<font color ="#0000FF">*  ENDIF.</font>
+<font color ="#0000FF">*ENDFORM.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

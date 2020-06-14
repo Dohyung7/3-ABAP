@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Y206_DOWNUP_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: Y206_DOWNUP_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          Y230_DOWNUP_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  XLS_FORM_DOWN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM xls_form_down .
+  TYPE-POOLS ole2 .
+
+  DATA: application TYPE ole2_object,
+        workbook    TYPE ole2_object,
+        sheet       TYPE ole2_object,
+        cells       TYPE ole2_object.
+
+  DATA index TYPE i.
+
+  DATA: BEGIN OF ls_xls_form OCCURS 0,
+          txt10 TYPE text30,
+        END OF ls_xls_form.
+
+  CLEAR: ls_xls_form, ls_xls_form[].
+
+  CLEAR gt_fcat.
+  CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
+    EXPORTING
+      i_structure_name = tab_name
+    CHANGING
+      ct_fieldcat      = gt_fcat.
+
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE e000 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+  ENDIF.
+
+  CALL METHOD cl_alv_table_create=&gt;create_dynamic_table
+    EXPORTING
+      it_fieldcatalog = gt_fcat
+    IMPORTING
+      ep_table        = gt_ref.
+
+  ASSIGN gt_ref-&gt;* TO &lt;data&gt;.
+
+  CLEAR: ls_xls_form, ls_xls_form[].
+  MOVE gt_fcat[]     TO gt_fldcat[].
+  LOOP AT gt_fldcat.
+    CLEAR gt_fldcat-scrtext_l.
+    SELECT SINGLE ddtext
+      INTO gt_fldcat-scrtext_l
+      FROM dd03t
+     WHERE tabname    = tab_name
+       AND fieldname  = gt_fldcat-fieldname
+       AND ddlanguage = '3'.
+
+    IF sy-subrc &lt;&gt; 0.
+      SELECT SINGLE ddtext
+        INTO gt_fldcat-scrtext_l
+        FROM dd03vt
+       WHERE tabname    =  tab_name
+         AND fieldname  = gt_fldcat-fieldname
+         AND ddlanguage = '3'.
+
+    ENDIF.
+
+<font color ="#0000FF">*    IF gt_fldcat-fieldname  &lt;&gt; 'MANDT'.</font>
+    IF gt_fldcat-scrtext_l IS INITIAL.
+      ls_xls_form-txt10  = gt_fldcat-fieldname .
+    ELSE.
+      CONCATENATE gt_fldcat-fieldname '(' gt_fldcat-scrtext_l  ')'
+             INTO ls_xls_form-txt10.
+    ENDIF.
+    APPEND ls_xls_form.
+<font color ="#0000FF">*    ENDIF.</font>
+  ENDLOOP.
+
+  IF gv_sw1 IS INITIAL.
+    CREATE OBJECT application 'excel.application'.
+    SET PROPERTY OF application 'visible' = 1.
+    CALL METHOD OF application 'Workbooks' = workbook.
+    CALL METHOD OF workbook 'Add'.
+
+<font color ="#0000FF">* Create first Excel Sheet</font>
+    CALL METHOD OF application 'Worksheets' = sheet
+      EXPORTING
+      #1 = 1.
+    CALL METHOD OF sheet 'Activate'.
+    SET PROPERTY OF sheet 'Name' = 'Sheet1'.
+
+    LOOP AT ls_xls_form.
+      index = sy-tabix.
+      CALL METHOD OF sheet 'Cells' = cells
+        EXPORTING
+        #1 = index.
+      SET PROPERTY OF cells 'Value' = ls_xls_form-txt10.
+    ENDLOOP.
+  ENDIF.
+
+  CLEAR gv_sw1.
+ENDFORM.                    " XLS_FORM_DOWN
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  GET_XLS_FILENAME</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM get_xls_filename .
+
+  CALL FUNCTION 'F4_FILENAME'
+    EXPORTING
+      field_name = 'P_FILE'
+    IMPORTING
+      file_name  = p_xls.
+
+ENDFORM.                    " GET_XLS_FILENAME
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  XLS_UPLOAD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM xls_upload .
+  CLEAR wa_mode-count.
+  CLEAR wa_mode-error.
+
+  gv_sw1 = 'X'.
+  PERFORM xls_form_down.
+
+  DATA lp_table TYPE REF TO data.
+
+  CALL METHOD cl_alv_table_create=&gt;create_dynamic_table
+    EXPORTING
+      it_fieldcatalog = gt_fldcat[]
+    IMPORTING
+      ep_table        = lp_table.
+
+  ASSIGN lp_table-&gt;* TO &lt;gt_table&gt;.
+
+  REFRESH : &lt;gt_table&gt;.
+
+  PERFORM f_file_read TABLES &lt;gt_table&gt;
+                       USING p_xls.
+<font color ="#0000FF">*..화면 출력</font>
+  PERFORM display_data.
+
+ENDFORM.                    " XLS_UPLOAD
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  DISPLAY_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM display_data.
+
+  CALL SCREEN '0100'.
+
+ENDFORM.                    " DISPLAY_DATA
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  SAVE_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM save_data .
+  FIELD-SYMBOLS : &lt;lfs_wa&gt; TYPE any.
+
+
+  DATA : lp_watmp TYPE REF TO data.
+  CREATE DATA lp_watmp LIKE LINE OF &lt;gt_table&gt;.
+  ASSIGN lp_watmp-&gt;* TO &lt;lfs_wa&gt;.
+
+  CLEAR gv_err.
+  LOOP AT &lt;gt_table&gt; ASSIGNING &lt;lfs_wa&gt;.
+    MODIFY (tab_name) FROM &lt;lfs_wa&gt;.
+    IF sy-subrc &lt;&gt; 0 .
+      MOVE 'E'       TO gv_err.
+    ENDIF.
+  ENDLOOP.
+
+  IF gv_err IS INITIAL.
+    COMMIT WORK AND WAIT.
+    MESSAGE s000 WITH '데이터가 생성되었습니다'.
+  ELSE.
+    MESSAGE s000 WITH '데이터가 저장에 실패하였습니다.'.
+  ENDIF.
+ENDFORM.                    " SAVE_DATA
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  CONV_ALPHA_IN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_PS_MOD_CELL_VALUE  text</font>
+<font color ="#0000FF">*      --&gt;P_LV_MATNR  text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM conv_alpha_in  USING  pv_in pv_out.
+
+  CHECK pv_in  NE space.
+
+  CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+    EXPORTING
+      input  = pv_in
+    IMPORTING
+      output = pv_out.
+
+ENDFORM.                    " CONV_ALPHA_IN
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  f_file_read</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_IT_CABN_F  text</font>
+<font color ="#0000FF">*      --&gt;P_P_FNAME1  text</font>
+<font color ="#0000FF">*      --&gt;P_0039   text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM f_file_read  TABLES it_data
+                  USING  arg_fname.
+
+  IF arg_fname IS INITIAL.
+    EXIT.
+  ENDIF.
+  TYPES truxs_t_text_data(4096) TYPE c OCCURS 0.
+
+  DATA: ls_table_name(20),
+        lwa_text_data TYPE truxs_t_text_data.
+
+  FIELD-SYMBOLS &lt;it_fs&gt; TYPE  STANDARD TABLE.
+
+<font color ="#0000FF">* Internal Table Assign</font>
+<font color ="#0000FF">* CONCATENATE  arg_table_name '[]' INTO ls_table_name.</font>
+<font color ="#0000FF">* ASSIGN (ls_table_name) TO &lt;it_fs&gt;.</font>
+
+  TRANSLATE arg_fname TO UPPER CASE. "대문자로변경
+
+  CALL FUNCTION 'TEXT_CONVERT_XLS_TO_SAP'
+    EXPORTING
+      i_line_header        = 'X'
+      i_tab_raw_data       = lwa_text_data
+      i_filename           = arg_fname
+    TABLES
+      i_tab_converted_data = &lt;gt_table&gt;[]
+    EXCEPTIONS
+      conversion_failed    = 1
+      OTHERS               = 2.
+
+  IF sy-subrc &lt;&gt; 0.
+    IF sy-subrc = 1.
+      MESSAGE i000 WITH '파일이 Open되어 있거나, 읽기 오류입니다.'.
+<font color ="#0000FF">*(zmst)</font>
+      MOVE 'X' TO wa_mode-error.
+      EXIT.
+    ELSE.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+              WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+  ENDIF.
+  it_data[] = &lt;gt_table&gt;[].
+
+
+ENDFORM.                    " f_file_read
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  INITIALIZ</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM initializ .
+<font color ="#0000FF">*..Standard 실행 버튼 제거</font>
+  DATA lt_stus_excl LIKE sy-ucomm OCCURS 0 WITH HEADER LINE.
+
+  REFRESH lt_stus_excl.
+  APPEND 'ONLI' TO lt_stus_excl.
+
+  CALL FUNCTION 'RS_SET_SELSCREEN_STATUS'
+    EXPORTING
+      p_status  = '%_00'
+    TABLES
+      p_exclude = lt_stus_excl.
+
+
+<font color ="#0000FF">*..Function Key 1에 실행버튼 추가</font>
+<font color ="#0000FF">*..Icon + Text</font>
+  SELECT SINGLE id
+           INTO icon-id
+           FROM icon
+          WHERE name EQ 'ICON_EXECUTE_OBJECT'.
+
+  CONCATENATE icon-id '데이터 업로드' INTO sscrfields-functxt_01.
+
+
+<font color ="#0000FF">*..Function Key 2에 실행버튼 추가</font>
+<font color ="#0000FF">*..Icon + Text</font>
+  SELECT SINGLE id
+           INTO icon-id
+           FROM icon
+          WHERE name EQ 'ICON_REPORT'.
+
+  CONCATENATE icon-id '양식 다운로드' INTO sscrfields-functxt_02.
+
+<font color ="#0000FF">*..Function Key 3에 실행버튼 추가</font>
+<font color ="#0000FF">*..Icon + Text</font>
+  SELECT SINGLE id
+           INTO icon-id
+           FROM icon
+          WHERE name EQ 'ICON_REPORT'.
+
+  CONCATENATE icon-id '데이터 다운로드' INTO sscrfields-functxt_03.
+
+
+ENDFORM.                    " INITIALIZ
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  XLS_FORM_DATA_DOWN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM xls_form_data_down .
+
+  CLEAR wa_mode-count.
+  CLEAR wa_mode-error.
+
+  gv_sw1 = 'X'.
+  PERFORM xls_form_down.
+
+  DATA lp_table TYPE REF TO data.
+
+  CALL METHOD cl_alv_table_create=&gt;create_dynamic_table
+    EXPORTING
+      it_fieldcatalog = gt_fldcat[]
+    IMPORTING
+      ep_table        = lp_table.
+
+  ASSIGN lp_table-&gt;* TO &lt;gt_table&gt;.
+
+  REFRESH : &lt;gt_table&gt;.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE &lt;gt_table&gt;
+    FROM (tab_name).
+
+<font color ="#0000FF">*..화면 출력</font>
+  PERFORM display_data.
+ENDFORM.                    " XLS_FORM_DATA_DOWN
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

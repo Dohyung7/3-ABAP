@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0380F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0380F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0380F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0380F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_alv_0100 .
+
+  IF go_docking_container IS INITIAL.
+<font color ="#0000FF">*  OBJECT 积己.</font>
+
+    PERFORM create_obj.
+
+<font color ="#0000FF">*  FIELD CATALOG 积己.</font>
+    PERFORM create_fieldcat.
+
+<font color ="#0000FF">*  LAYOUT 技泼</font>
+    PERFORM set_layout.
+
+<font color ="#0000FF">*  METHOD 龋免.</font>
+    PERFORM display_grid.
+
+  ELSE.
+
+    "拳搁 REFRESH
+    CALL METHOD go_grid-&gt;refresh_table_display.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJ</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_obj .
+
+  CREATE OBJECT go_docking_container
+    EXPORTING
+      side      = cl_gui_docking_container=&gt;dock_at_left
+      extension = 2000.
+
+  CREATE OBJECT go_grid
+    EXPORTING
+      i_parent = go_docking_container.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_fieldcat .
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'key01'.
+  gs_fieldcat-coltext = 'key01'.
+  gs_fieldcat-key = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'fld01'.
+  gs_fieldcat-coltext = 'fld01'.
+  gs_fieldcat-edit = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'fld02'.
+  gs_fieldcat-coltext = 'fld02'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+<font color ="#0000FF">*  GS_LAYOUT-ZEBRA      = 'X'.</font>
+  gs_layout-sel_mode   = 'D'.
+  gs_layout-cwidth_opt = 'A'.
+  gs_layout-stylefname = 'CELLTAB'.
+<font color ="#0000FF">*  GS_LAYOUT-NO_TOOLBAR = 'X'.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM display_grid .
+
+  CALL METHOD go_grid-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout       = gs_layout
+    CHANGING
+      it_outtab       = gt_disp
+      it_fieldcatalog = gt_fieldcat
+      it_sort         = gt_sort.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data .
+
+  DATA : ls_celltab TYPE lvc_s_styl,
+         a TYPE i.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_disp
+    FROM yt206_0040.
+
+  SORT gt_disp.
+
+  FIELD-SYMBOLS : &lt;fs_disp&gt;  like gs_disp.
+
+  LOOP AT gt_disp ASSIGNING &lt;fs_disp&gt; .
+    a = a + 1.
+
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*   IF gs_disp-fld02 EQ 'X'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      LOOP AT gs_disp-celltab ASSIGNING &lt;fs_disp&gt;.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*        &lt;fs_disp&gt;-fieldname = 'fld01'.</font>
+<font color ="#0000FF">*        &lt;fs_disp&gt;-style     = cl_gui_alv_grid=&gt;mc_style_disabled.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      ENDLOOP.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      ls_celltab-fieldname = 'fld01'.</font>
+<font color ="#0000FF">*      ls_celltab-style     = cl_gui_alv_grid=&gt;mc_style_disabled.</font>
+<font color ="#0000FF">**      APPEND ls_celltab TO gs_disp-celltab.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      INSERT ls_celltab INTO TABLE gs_disp-celltab.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      MODIFY gt_disp FROM gs_disp.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+
+  ENDLOOP.
+
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

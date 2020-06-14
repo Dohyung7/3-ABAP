@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0330F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0330F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0330F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0330F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_HEADER_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_header_data .
+
+  CLEAR : gt_disp_header, gs_disp_header.
+
+  SELECT ebeln bukrs bstyp bsart
+         lifnr zterm
+    INTO CORRESPONDING FIELDS OF TABLE gt_disp_header
+    FROM ekko
+   WHERE ebeln IN s_ebeln   "구매문서번호
+     AND bukrs IN s_bukrs   "회사코드
+     AND bsart IN s_bsart   "구매문서유형
+     AND lifnr IN s_lifnr   "공급업체
+     AND bstyp EQ 'F'.      "구매오더만
+  SORT gt_disp_header BY ebeln.
+
+  gs_disp_header-stat = icon_led_green.
+  MODIFY gt_disp_header FROM gs_disp_header
+                        TRANSPORTING stat
+                        WHERE stat NE icon_led_green.
+
+
+
+ENDFORM.
+
+
+FORM set_alv_0100 .
+
+  IF go_docking_container IS INITIAL.
+<font color ="#0000FF">*  OBJECT 생성.</font>
+
+    PERFORM create_obj.
+
+<font color ="#0000FF">*  FIELD CATALOG 생성.</font>
+    PERFORM create_fieldcat.
+
+<font color ="#0000FF">* LAYOUT 세팅</font>
+    PERFORM set_layout.
+
+<font color ="#0000FF">* EVENT  등록</font>
+
+    PERFORM set_event.
+
+<font color ="#0000FF">*  METHOD 호출.</font>
+    PERFORM display_grid.
+
+  ELSE.
+
+    "화면 REFRESH
+    CALL METHOD go_grid1-&gt;refresh_table_display.
+    CALL METHOD go_grid2-&gt;refresh_table_display.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJ</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_obj .
+  CREATE OBJECT go_docking_container
+    EXPORTING
+      side      = cl_gui_docking_container=&gt;dock_at_left
+      extension = 2000.
+
+  CREATE OBJECT go_splitter
+    EXPORTING
+      parent  = go_docking_container
+      rows    = 2
+      columns = 1.
+
+<font color ="#0000FF">* 분할 영역을 개별 컨테이너에 할당</font>
+  CALL METHOD go_splitter-&gt;get_container
+    EXPORTING
+      row       = 1
+      column    = 1
+    RECEIVING
+      container = go_container1.
+
+  CALL METHOD go_splitter-&gt;get_container
+    EXPORTING
+      row       = 2
+      column    = 1
+    RECEIVING
+      container = go_container2.
+
+  CREATE OBJECT go_grid1
+    EXPORTING
+      i_parent = go_container1.
+
+  CREATE OBJECT go_grid2
+    EXPORTING
+      i_parent = go_container2.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_fieldcat .
+  CLEAR : gs_fieldcat, gt_fieldcat1.
+
+<font color ="#0000FF">* HEADER ALV</font>
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STAT'.
+  gs_fieldcat-coltext = '상태'.
+  gs_fieldcat-key = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'EBELN'.
+  gs_fieldcat-coltext = '구매문서번호'.
+  gs_fieldcat-key = 'X'.
+  gs_fieldcat-hotspot = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'BUKRS'.
+  gs_fieldcat-coltext = '회사코드'.
+  gs_fieldcat-ref_table = 'EKKO'.
+  gs_fieldcat-ref_field = 'BUKRS'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'BSTYP'.
+  gs_fieldcat-coltext = '구매문서 카테고리'.
+  gs_fieldcat-ref_table = 'EKKO'.
+  gs_fieldcat-ref_field = 'BSTYP'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'BSART'.
+  gs_fieldcat-coltext = '구매문서유형'.
+  gs_fieldcat-ref_table = 'EKKO'.
+  gs_fieldcat-ref_field = 'BSART'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'LIFNR'.
+  gs_fieldcat-coltext = '공급업체'.
+  gs_fieldcat-ref_table = 'EKKO'.
+  gs_fieldcat-ref_field = 'LIFNR'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'ZTERM'.
+  gs_fieldcat-coltext = '지급방법'.
+  gs_fieldcat-ref_table = 'EKKO'.
+  gs_fieldcat-ref_field = 'ZTERM'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'VERKF'.
+  gs_fieldcat-coltext = '공급업체 담당자'.
+  gs_fieldcat-edit      = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'TELF1'.
+  gs_fieldcat-coltext = '담당자 연락처'.
+  gs_fieldcat-edit      = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'RESULT'.
+  gs_fieldcat-coltext = '비고'.
+  APPEND gs_fieldcat TO gt_fieldcat1.
+
+<font color ="#0000FF">* ITEM ALV</font>
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'EBELN'.
+  gs_fieldcat-coltext = '구매문서번호'.
+  gs_fieldcat-key = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat2.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'EBELP'.
+  gs_fieldcat-coltext = '구매문서번호'.
+  gs_fieldcat-key = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat2.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'AEDAT'.
+  gs_fieldcat-coltext = '생성일'.
+  APPEND gs_fieldcat TO gt_fieldcat2.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'TXZ01'.
+  gs_fieldcat-coltext = '내역'.
+  APPEND gs_fieldcat TO gt_fieldcat2.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MATNR'.
+  gs_fieldcat-coltext = '자재코드'.
+  APPEND gs_fieldcat TO gt_fieldcat2.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'LGORT'.
+  gs_fieldcat-coltext = '저장위치'.
+  APPEND gs_fieldcat TO gt_fieldcat2.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+  gs_layout1-zebra      = 'X'.
+  gs_layout1-sel_mode   = 'D'.
+  gs_layout1-cwidth_opt = 'X'.
+<font color ="#0000FF">*  GS_LAYOUT-NO_ROWINS  = 'X'.</font>
+
+  gs_layout2-zebra      = 'X'.
+  gs_layout2-sel_mode   = 'D'.
+  gs_layout2-cwidth_opt = 'X'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM display_grid .
+
+<font color ="#0000FF">* HEADER</font>
+  CALL METHOD go_grid1-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout       = gs_layout1
+    CHANGING
+      it_outtab       = gt_disp_header
+      it_fieldcatalog = gt_fieldcat1.
+
+<font color ="#0000FF">* item</font>
+  CALL METHOD go_grid2-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout       = gs_layout2
+    CHANGING
+      it_outtab       = gt_disp_item
+      it_fieldcatalog = gt_fieldcat2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_DOUBLE_CLICK</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_ROW  text</font>
+<font color ="#0000FF">*      --&gt;P_E_COLUMN  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_double_click  USING    ps_row TYPE lvc_s_row.
+
+  READ TABLE gt_disp_header INTO gs_disp_header INDEX ps_row-index.
+
+  CHECK sy-subrc = 0.
+
+  CLEAR : gt_disp_item, gs_disp_item.
+  SELECT ebeln ebelp aedat txz01 matnr lgort
+    INTO CORRESPONDING FIELDS OF TABLE gt_disp_item
+    FROM ekpo
+   WHERE ebeln = gs_disp_header-ebeln.
+
+
+  CALL METHOD go_grid2-&gt;set_frontend_layout
+    EXPORTING
+      is_layout = gs_layout2.
+
+
+  CALL METHOD go_grid2-&gt;refresh_table_display.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_event .
+
+  CREATE OBJECT go_event_receiver.
+
+  SET HANDLER go_event_receiver-&gt;handle_double_click FOR go_grid1.
+  SET HANDLER go_event_receiver-&gt;handle_hotspot_click FOR go_grid1.
+  SET HANDLER go_event_receiver-&gt;handle_data_changed  FOR go_grid1.
+  SET HANDLER go_event_receiver-&gt;handle_toolbar FOR go_grid1.
+  SET HANDLER go_event_receiver-&gt;handle_user_command FOR go_grid1.
+
+  CALL METHOD go_grid1-&gt;set_toolbar_interactive.
+
+  CALL METHOD go_grid1-&gt;register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=&gt;mc_evt_modified.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_HOTSPOT_CLICK</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_ROW_ID  text</font>
+<font color ="#0000FF">*      --&gt;P_E_COLUMN_ID  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_hotspot_click  USING   ps_row TYPE lvc_s_row
+                                    ps_col TYPE lvc_s_col.
+
+<font color ="#0000FF">* 선택한 라인의 구매문서번호 확인</font>
+  READ TABLE gt_disp_header INTO gs_disp_header INDEX ps_row-index.
+  IF sy-subrc = 0.
+
+    CASE ps_col-fieldname.
+      WHEN 'EBELN'.
+
+        SET PARAMETER ID 'BES' FIELD gs_disp_header-ebeln.
+
+        CALL TRANSACTION 'ME23N'.
+
+
+    ENDCASE.
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_DATA_CHANGED</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_ER_DATA_CHANGED  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_data_changed  USING    po_data_changed
+                                  TYPE REF TO cl_alv_changed_data_protocol.
+
+  DATA : lt_good_cells TYPE lvc_t_modi,
+         ls_good_cells TYPE lvc_s_modi.
+
+  lt_good_cells = po_data_changed-&gt;mt_good_cells.
+
+  LOOP AT lt_good_cells INTO ls_good_cells.
+
+    AT END OF row_id.
+
+      CALL METHOD po_data_changed-&gt;modify_cell
+        EXPORTING
+          i_row_id    = ls_good_cells-row_id
+          i_fieldname = 'STAT'
+          i_value     = icon_led_yellow.
+
+    ENDAT.
+
+  ENDLOOP.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form TOOLBAR_PART</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_OBJECT  text</font>
+<font color ="#0000FF">*      --&gt;P_E_INTERACTIVE  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM toolbar_part  USING    po_object TYPE REF TO cl_alv_event_toolbar_set
+                            po_interactive.
+
+  DATA : ls_toolbar TYPE stb_button.
+
+  CLEAR ls_toolbar.
+  ls_toolbar-butn_type = 3.
+  APPEND ls_toolbar TO po_object-&gt;mt_toolbar.
+
+  CLEAR ls_toolbar.
+  ls_toolbar-function     = 'MODIFY'.
+  ls_toolbar-icon         = icon_insert_row.
+  ls_toolbar-quickinfo    = '변경하는 겁니다잉' .
+  ls_toolbar-text         = '변경'.
+  APPEND ls_toolbar TO po_object-&gt;mt_toolbar.
+
+ENDFORM.
+
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DATA_MODIFY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM data_modify .
+
+  DATA : lt_rows    TYPE lvc_t_row,
+         ls_rows    TYPE lvc_s_row,
+         lv_changed TYPE c,
+         lv_answer  TYPE c.
+
+<font color ="#0000FF">* 선택한 라인 확인 및 변경라인 유무 점검</font>
+  PERFORM get_selected_rows CHANGING lt_rows
+                                     lv_changed.
+  IF lv_changed IS INITIAL.
+    MESSAGE s012 DISPLAY LIKE 'E'.  "선택한 라인 중 변경된 데이터가 없습니다.
+    EXIT.
+  ENDIF.
+
+<font color ="#0000FF">* USER CONFIRM</font>
+  PERFORM user_confirm1 USING '저장확인'
+                             '변경하신 데이터가 저장됩니다. 계속 진행하시겠습니까?'
+                       CHANGING lv_answer.
+  CHECK lv_answer = '1'.
+
+<font color ="#0000FF">* 변경 수행</font>
+  LOOP AT lt_rows INTO ls_rows.
+
+    READ TABLE gt_disp_header INTO gs_disp_header
+                              INDEX ls_rows-index.
+    IF sy-subrc = 0.
+      IF gs_disp_header-stat = icon_led_green.
+        CONTINUE.   "LOOP 에서 현재 수행되는 라인을 PASS 하고 다름라인 수행
+      ENDIF.
+
+      "BAPI 수행
+      PERFORM change_po USING    gs_disp_header-ebeln
+                                 gs_disp_header-verkf
+                                 gs_disp_header-telf1
+                        CHANGING gs_disp_header-stat
+                                 gs_disp_header-result.
+
+      MODIFY gt_disp_header FROM gs_disp_header
+                            INDEX ls_rows-index.
+
+    ENDIF.
+
+  ENDLOOP.
+
+  "화면 REFRESH
+  CALL METHOD go_grid1-&gt;refresh_table_display.
+
+
+ENDFORM.
+
+FORM change_po  USING    p_ebeln
+                         p_verkf
+                         p_telf1
+                CHANGING p_stat
+                         p_result.
+
+  DATA : ls_header  TYPE bapimepoheader,
+         ls_headerx TYPE bapimepoheaderx,
+         lt_return  TYPE TABLE OF bapiret2,
+         ls_return  TYPE bapiret2,
+         lv_err     TYPE c.
+
+  CLEAR : p_stat, p_result.
+
+<font color ="#0000FF">* 변경할 데이터 적용</font>
+  ls_header-sales_pers = p_verkf.
+  ls_header-telephone  = p_telf1.
+
+<font color ="#0000FF">* 변경할 필드 셋팅</font>
+  ls_headerx-sales_pers = 'X'.
+  ls_headerx-telephone  = 'X'.
+
+<font color ="#0000FF">* BAPI 수행</font>
+  CLEAR lv_err.
+  CLEAR gs_disp_header-result.
+  CALL FUNCTION 'BAPI_PO_CHANGE'
+    EXPORTING
+      purchaseorder = p_ebeln
+      poheader      = ls_header
+      poheaderx     = ls_headerx
+    TABLES
+      return        = lt_return.
+
+<font color ="#0000FF">* 에러 취합</font>
+  LOOP AT lt_return INTO ls_return WHERE type EQ 'E'
+                                      OR type EQ 'A'.
+    "에러 플래그 처리
+    lv_err = 'X'.
+    "에러메시지 취합
+    CONCATENATE p_result ls_return-message
+           INTO p_result
+           SEPARATED BY '#'.
+
+  ENDLOOP.
+
+  IF lv_err IS INITIAL.
+<font color ="#0000FF">* 최종 반영(COMMIT WORK)</font>
+    CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+      EXPORTING
+        wait = 'X'.
+    p_stat   = icon_led_green.
+    p_result = ''.
+  ELSE.
+    "아이콘 변경
+    p_stat = icon_led_red.
+  ENDIF.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_SELECTED_ROWS</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      &lt;--P_LT_ROWS  text</font>
+<font color ="#0000FF">*      &lt;--P_LV_CHANGED  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_selected_rows  CHANGING pt_rows TYPE lvc_t_row
+                                 p_changed.
+
+  DATA : ls_rows    TYPE lvc_s_row.
+
+  CLEAR : pt_rows, p_changed.
+
+<font color ="#0000FF">* 선택라인 조회</font>
+  CALL METHOD go_grid1-&gt;get_selected_rows
+    IMPORTING
+      et_index_rows = pt_rows.
+
+<font color ="#0000FF">* 선택라인이 없으면 오류</font>
+  IF pt_rows IS INITIAL.
+    MESSAGE s001 DISPLAY LIKE 'E'.  "라인을 선택하세요.
+    EXIT.
+  ENDIF.
+
+<font color ="#0000FF">* 선택한 라인 중 변경된 라인이 포함되었는지 확인</font>
+  LOOP AT pt_rows INTO ls_rows.
+    READ TABLE gt_disp_header INTO gs_disp_header
+                              INDEX ls_rows-index.
+    IF sy-subrc = 0.
+      IF gs_disp_header-stat = icon_led_yellow.
+        p_changed = 'X'.
+        EXIT.
+      ENDIF.
+    ENDIF.
+  ENDLOOP.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0360</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0360</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0360</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0360</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT yr206_0360 MESSAGE-ID ym206.
+
+include <a href ="yr206_0360top.html">yr206_0360top</a>.
+include <a href ="yr206_0360f01.html">yr206_0360f01</a>.
+include <a href ="yr206_0360i01.html">yr206_0360i01</a>.
+include <a href ="yr206_0360o01.html">yr206_0360o01</a>.
+
+INITIALIZATION.
+
+
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_path.
+  PERFORM get_file_path.
+
+<font color ="#0000FF">**AT SELECTION-SCREEN ON HELP-REQUEST FOR P_PATH.</font>
+
+START-OF-SELECTION.
+
+  PERFORM upload_from_excel.
+  CALL SCREEN '0100'.
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM206</font>
+<font color ="#0000FF">*010</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

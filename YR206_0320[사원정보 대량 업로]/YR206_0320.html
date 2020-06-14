@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0320</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0320</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  사원정보 대량 업로</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0320</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT YR206_0320 MESSAGE-ID YM206.
+
+
+include <a href ="yr206_0320cls.html">YR206_0320CLS</a>.
+include <a href ="yr206_0320top.html">YR206_0320TOP</a>.
+include <a href ="yr206_0320i01.html">YR206_0320I01</a>.
+include <a href ="yr206_0320o01.html">YR206_0320O01</a>.
+include <a href ="yr206_0320f01.html">YR206_0320F01</a>.
+
+
+
+INITIALIZATION. "셀렉션 스크린이 발동된기 전에 초기값 설정 후 셀력션 스크린 발동
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_path. "셀렉션 스크린에 옆에 조그만한 버튼 생기는 것
+  PERFORM get_file_path.
+
+
+START-OF-SELECTION.
+PERFORM get_master_data.
+PERFORM upload_from_excel.
+
+CALL SCREEN '0100'.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* 0100 --&gt; 스크린타이틀스</font>
+
+<font color ="#0000FF">*Text elements</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* E01 성별 유효코드가 아닙니다.</font>
+<font color ="#0000FF">* E02 직급 유효코드가 아닙니다.</font>
+<font color ="#0000FF">* E03 사원번호랑 이름은 필수 '값' 입니다.</font>
+<font color ="#0000FF">* E04 입사일이 형식에 맞지 않습니다.</font>
+<font color ="#0000FF">* E05 생일이 형식에 맞지 않습니다.</font>
+<font color ="#0000FF">* E06 이미등록 되어 있는 사번번호 입니다.</font>
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* P_PATH         파일 경로</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: Hard coded</font>
+<font color ="#0000FF">*   test_INS_LINE</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM206</font>
+<font color ="#0000FF">*000</font>
+<font color ="#0000FF">*008</font>
+<font color ="#0000FF">*011</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

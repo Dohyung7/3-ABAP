@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0340F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0340F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0340F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0340F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form RUN_BDC_MM01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM run_bdc_mm01 .
+
+  DATA : lv_matnr    TYPE mara-matnr,
+         lv_msg      TYPE char255,
+         lv_msg_full TYPE char255.
+
+  CLEAR gt_bdc.
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '0060'.
+
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=ENTR'.
+  PERFORM set_bdc_field USING 'RMMG1-MATNR' p_matnr.
+  PERFORM set_bdc_field USING 'RMMG1-MBRSH' p_mbrsh.
+  PERFORM set_bdc_field USING 'RMMG1-MTART' p_mtart.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '0070'.
+
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=ENTR'.
+  PERFORM set_bdc_field USING 'MSICHTAUSW-KZSEL(01)' 'X'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4004'.
+
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=BU'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' p_meins.
+
+  gs_option-dismode = p_mode.      "A/N/E
+  gs_option-updmode = 'S'.
+
+  CALL TRANSACTION 'MM01' USING gt_bdc
+                          OPTIONS FROM gs_option
+                          MESSAGES INTO gt_msg.
+  READ TABLE gt_msg INTO gs_msg WITH KEY msgid = 'M3'
+                                         msgnr = '800'.
+  IF sy-subrc = 0.
+    "己傍贸府
+  ELSE.
+    "角菩贸府
+    LOOP AT gt_msg INTO gs_msg.
+      CLEAR lv_msg.
+      CALL FUNCTION 'MESSAGE_TEXT_BUILD'
+        EXPORTING
+          msgid               = gs_msg-msgid
+          msgnr               = gs_msg-msgnr
+          msgv1               = gs_msg-msgv1
+          msgv2               = gs_msg-msgv2
+          msgv3               = gs_msg-msgv3
+          msgv4               = gs_msg-msgv4
+        IMPORTING
+          message_text_output = lv_msg.
+
+      CONCATENATE lv_msg_full lv_msg INTO lv_msg_full
+                                     SEPARATED BY '#'.
+    ENDLOOP.
+
+    MESSAGE s000 WITH lv_msg_full DISPLAY LIKE 'E'.
+
+  ENDIF.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_BDC_BEGIN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_bdc_begin  USING    p_prog
+                             p_dynp.
+
+  CLEAR : gs_bdc.
+  gs_bdc-program  = p_prog.
+  gs_bdc-dynpro   = p_dynp.
+  gs_bdc-dynbegin = 'X'.
+  APPEND gs_bdc TO gt_bdc.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_BDC_FIELD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_bdc_field  USING    p_fname
+                             p_value.
+  CLEAR : gs_bdc.
+  gs_bdc-fnam  = p_fname.
+  gs_bdc-fval  = p_value.
+  APPEND gs_bdc TO gt_bdc.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

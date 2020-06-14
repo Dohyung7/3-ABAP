@@ -1,0 +1,305 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0290F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0290F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0290F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0290F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA .
+  DATA LS_DISP LIKE GS_DISP.
+  DATA LT_DISP LIKE TABLE OF GS_DISP.
+
+  DATA LS_0328 TYPE ZT206_0328.
+  DATA LT_0328 LIKE TABLE OF LS_0328.
+
+  DATA : BEGIN OF LS_VBAK,
+           VBELN TYPE VBAK-VBELN,
+           ERDAT TYPE VBAK-ERDAT,
+         END OF LS_VBAK."X
+
+  DATA : BEGIN OF LS_VBAP,
+           VBELN  TYPE VBAP-VBELN,
+           POSNR  TYPE VBAP-POSNR,
+           MATNR  TYPE VBAP-MATNR,
+           KWMENG TYPE VBAP-KWMENG,
+           MEINS  TYPE VBAP-MEINS,
+           NETWR  TYPE VBAP-NETWR,
+           WAERK  TYPE VBAP-WAERK,
+         END OF LS_VBAP."X
+
+  DATA : BEGIN OF LS_MAKT,
+           MATNR TYPE MAKT-MATNR,
+           MAKTX TYPE MAKT-MAKTX,
+         END OF LS_MAKT."O
+
+  DATA : LT_VBAK LIKE TABLE OF LS_VBAK,
+         LT_VBAP LIKE TABLE OF LS_VBAP,
+         LT_MAKT LIKE TABLE OF LS_MAKT.
+
+  SELECT A~VBELN A~ERDAT
+         B~POSNR B~MATNR B~KWMENG B~MEINS B~NETWR B~WAERK
+    INTO CORRESPONDING FIELDS OF TABLE LT_DISP
+    FROM VBAK AS A INNER JOIN VBAP AS B
+    ON A~VBELN = B~VBELN
+    WHERE A~VBELN IN S_VBELN
+    AND   A~ERDAT IN S_ERDAT.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE LT_MAKT
+    FROM MAKT
+    WHERE SPRAS = SY-LANGU.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE LT_0328
+    FROM ZT206_0328.
+
+
+  LOOP AT LT_DISP INTO LS_DISP.
+
+    READ TABLE LT_MAKT INTO LS_MAKT WITH KEY MATNR = LS_DISP-MATNR.
+
+    IF SY-SUBRC = 0.
+      LS_DISP-MAKTX = LS_MAKT-MAKTX.
+    ENDIF.
+
+    APPEND LS_DISP TO GT_DISP.
+
+    CLEAR LS_DISP.
+
+  ENDLOOP.
+
+  LOOP AT GT_DISP INTO GS_DISP.
+
+    READ TABLE LT_0328 INTO LS_0328 WITH KEY VBELN = GS_DISP-VBELN
+                                                POSNR = GS_DISP-POSNR.
+
+    IF GS_DISP-VBELN = LS_0328-VBELN AND GS_DISP-POSNR = LS_0328-POSNR.
+      GS_DISP-CHECK = 'X'.
+      MODIFY GT_DISP FROM GS_DISP.
+    ENDIF.
+
+    CLEAR GS_DISP.
+
+  ENDLOOP.
+
+
+
+
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_DATA .
+  DATA : LT_ROW TYPE LVC_T_ROW,
+         LS_ROW TYPE LVC_S_ROW.
+
+  DATA LS_0328 TYPE ZT206_0328.
+
+  CALL METHOD GO_GRID-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = LT_ROW.
+
+  IF LINES( LT_ROW ) = 0.
+    EXIT.
+  ELSE.
+    LOOP AT LT_ROW INTO LS_ROW.
+
+      READ TABLE GT_DISP INTO GS_DISP INDEX LS_ROW-INDEX.
+
+      MOVE-CORRESPONDING GS_DISP TO LS_0328.
+
+      MODIFY ZT206_0328 FROM LS_0328.
+      IF SY-SUBRC = 0.
+        COMMIT WORK.
+
+        GS_DISP-CHECK = 'X'.
+        MODIFY GT_DISP INDEX LS_ROW-INDEX FROM GS_DISP.
+
+      ELSE.
+        ROLLBACK WORK.
+        LEAVE TO SCREEN 0.
+      ENDIF.
+    ENDLOOP.
+
+
+  ENDIF.
+
+
+
+ENDFORM.
+
+FORM SET_ALV.
+
+  DATA: IS_STABLE TYPE LVC_S_STBL.
+  IS_STABLE-ROW = 'X'.
+  IS_STABLE-COL = 'X'.
+
+  IF GO_CUSTOM_CONTAINER IS INITIAL.
+
+<font color ="#0000FF">*INSTANCE 생성</font>
+    PERFORM CREATE_INSTANCE.
+
+<font color ="#0000FF">*FIELDCATALOGY 생성</font>
+    PERFORM CREATE_FIELDCATALOGY.
+
+<font color ="#0000FF">*LAYOUT 설정</font>
+    PERFORM SET_LAYOUT.
+
+<font color ="#0000FF">*CALL METHOD</font>
+    PERFORM CALL_METHOD.
+
+  ELSE.
+    GO_GRID-&gt;REFRESH_TABLE_DISPLAY(
+      EXPORTING
+        IS_STABLE      =   IS_STABLE   " WITH STABLE ROWS/COLUMNS
+<font color ="#0000FF">*    I_SOFT_REFRESH =   I_SOFT_REFRESH  " WITHOUT SORT, FILTER, ETC.</font>
+      EXCEPTIONS
+        FINISHED       = 1
+        OTHERS         = 2 ).
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_INSTANCE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_INSTANCE .
+  CREATE OBJECT GO_CUSTOM_CONTAINER
+    EXPORTING
+      CONTAINER_NAME = 'GO_CUSTOM_CONTAINER'.
+
+  CREATE OBJECT GO_GRID
+    EXPORTING
+      I_PARENT = GO_CUSTOM_CONTAINER.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_FIELDCATALOGY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_FIELDCATALOGY .
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'VBELN'.
+  GS_FIELDCAT-COLTEXT = '판매오더번호'.
+    GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'POSNR'.
+  GS_FIELDCAT-COLTEXT = '판매문서품목'.
+  GS_FIELDCAT-KEY = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'MATNR'.
+  GS_FIELDCAT-COLTEXT = '자재코드'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'MAKTX'.
+  GS_FIELDCAT-COLTEXT = '자재코드명'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'KWMENG'.
+  GS_FIELDCAT-COLTEXT = '수량'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'MEINS'.
+  GS_FIELDCAT-COLTEXT = '단위'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'NETWR'.
+  GS_FIELDCAT-COLTEXT = '금액'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'WAERK'.
+  GS_FIELDCAT-COLTEXT = '통화'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'ERDAT'.
+  GS_FIELDCAT-COLTEXT = '생성일'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'CHECK'.
+  GS_FIELDCAT-COLTEXT = '저장여부'.
+  GS_FIELDCAT-CHECKBOX = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+  GS_LAYOUT-ZEBRA = 'X'.
+  GS_LAYOUT-SEL_MODE = 'D'.
+  GS_LAYOUT-CWIDTH_OPT = 'X'.
+  GS_LAYOUT-TOTALS_BEF = 'X'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CALL_METHOD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CALL_METHOD .
+  CALL METHOD GO_GRID-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      IS_LAYOUT       = GS_LAYOUT
+    CHANGING
+      IT_OUTTAB       = GT_DISP
+      IT_FIELDCATALOG = GT_FIELDCAT.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

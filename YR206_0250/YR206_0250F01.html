@@ -1,0 +1,308 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0250F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0250F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0250CLS</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR624_0300_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ALV_0100 .
+
+IF GO_CUSTOM_CONTAINER IS INITIAL.
+
+<font color ="#0000FF">* 인스턴스 생성</font>
+  PERFORM CREATE_OBJECT.
+
+<font color ="#0000FF">* 필드카탈로그 셋팅</font>
+  PERFORM SET_FIELDCAT.
+
+<font color ="#0000FF">*레이아웃 셋팅</font>
+  PERFORM SET_LAYOUT.
+
+  PERFORM SET_EVENT.
+
+<font color ="#0000FF">* Grid Display</font>
+  PERFORM DISPLAY_GRID.
+  ELSE.
+
+    ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT .
+
+
+  CREATE OBJECT GO_CUSTOM_CONTAINER
+    EXPORTING
+      CONTAINER_NAME = 'GO_CUSTOM_CONTAINER'.
+
+  CREATE OBJECT GO_GRID
+    EXPORTING
+      I_PARENT = GO_CUSTOM_CONTAINER.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT .
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'BUKRS'.
+  GS_FIELDCAT-COLTEXT = '회사코드'.
+<font color ="#0000FF">*  GS_FIELDCAT-OUTPUTLEN = '12'.</font>
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'EBELN'.
+  GS_FIELDCAT-COLTEXT = '구매문서번호'.
+  GS_FIELDCAT-KEY = 'X'.
+  GS_FIELDCAT-HOTSPOT = 'X'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'BSTYP'.
+  GS_FIELDCAT-COLTEXT = '구매문서범주'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'BSART'.
+  GS_FIELDCAT-COLTEXT = '구매문서유형'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'BATXT'.
+  GS_FIELDCAT-COLTEXT = '유형명'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'LIFNR'.
+  GS_FIELDCAT-COLTEXT = '공급업체'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'MATNR'.
+  GS_FIELDCAT-COLTEXT = '자재코드'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'MAKTX'.
+  GS_FIELDCAT-COLTEXT = '자재명'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'MENGE'.
+  GS_FIELDCAT-COLTEXT = '수량'.
+<font color ="#0000FF">*  GS_FIELDCAT-NO_OUT = 'X'.</font>
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+  CLEAR GS_FIELDCAT.
+  GS_FIELDCAT-FIELDNAME = 'AEDAT'.
+  GS_FIELDCAT-COLTEXT = '생성일'.
+  APPEND GS_FIELDCAT TO GT_FIELDCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+
+  GS_LAYOUT-ZEBRA = 'X'.
+  GS_LAYOUT-SEL_MODE = 'D'.
+  GS_LAYOUT-CWIDTH_OPT = 'X'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DISPLAY_GRID .
+
+
+  CALL METHOD GO_GRID-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      IS_LAYOUT       = GS_LAYOUT
+    CHANGING
+      IT_OUTTAB       = GT_DISP
+      IT_FIELDCATALOG = GT_FIELDCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA .
+
+  DATA LS_MAKT TYPE MAKT.
+  DATA LS_T161T TYPE T161T.
+
+  DATA LT_MAKT LIKE TABLE OF LS_MAKT.
+  DATA LT_T161T LIKE TABLE OF LS_T161T.
+
+  DATA LT_DISP LIKE TABLE OF GS_DISP.
+
+  CLEAR GT_DISP.
+
+<font color ="#0000FF">* 구매문서 조회</font>
+  CLEAR GT_DISP.
+
+  SELECT A~BUKRS
+         A~EBELN
+         A~BSTYP
+         A~BSART
+         A~LIFNR
+         B~MATNR
+         B~MENGE
+         B~AEDAT
+       INTO CORRESPONDING FIELDS OF TABLE LT_DISP
+     FROM EKKO AS A INNER JOIN EKPO AS B
+         ON A~EBELN = B~EBELN
+   WHERE A~EBELN IN S_EBELN
+        AND B~AEDAT IN S_AEDAT
+        AND A~BUKRS IN S_BUKRS.
+
+<font color ="#0000FF">* 구매문서유형 내역 조회</font>
+  SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE LT_T161T
+  FROM T161T
+    WHERE SPRAS = SY-LANGU.
+
+<font color ="#0000FF">* 자재코드 내역 조회</font>
+  SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE LT_MAKT
+  FROM MAKT
+  WHERE SPRAS = SY-LANGU.
+
+<font color ="#0000FF">* 데이터 취합</font>
+  LOOP AT LT_DISP INTO GS_DISP.
+
+    READ TABLE LT_T161T INTO LS_T161T
+                                     WITH KEY BSART = GS_DISP-BSART
+                                                   BSTYP = GS_DISP-BSTYP.
+
+    READ TABLE LT_MAKT INTO LS_MAKT
+                                    WITH KEY MATNR = GS_DISP-MATNR.
+
+    GS_DISP-BATXT = LS_T161T-BATXT.
+    GS_DISP-MAKTX = LS_MAKT-MAKTX.
+
+    COLLECT GS_DISP INTO GT_DISP.
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SHOW_POR_SCREEN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SHOW_POR_SCREEN .
+
+  DATA : LT_INDEX_ROWS TYPE LVC_T_ROW.
+  DATA : LS_INDEX_ROWS TYPE LVC_S_ROW.
+  DATA : LV_ANSWER TYPE C.
+
+  CALL METHOD GO_GRID-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = LT_INDEX_ROWS.
+
+
+  IF LINES( LT_INDEX_ROWS ) = 0.
+    MESSAGE I002 WITH TEXT-M05.
+    EXIT.                           " 루프 OR DO 문 에서 EXIT 을 쓰면 반복문을 빠져나오고 IF를 만나면 IF를 나가는게 아니라
+
+  ELSEIF LINES( LT_INDEX_ROWS ) &gt; 1.   " 서브루틴을 나간다.
+    MESSAGE I005 DISPLAY LIKE 'E'.
+    EXIT. " 현재 서브루틴 종료
+
+  ENDIF.
+
+  READ TABLE LT_INDEX_ROWS INTO LS_INDEX_ROWS INDEX 1.
+  READ TABLE GT_DISP INTO GS_DISP INDEX LS_INDEX_ROWS-INDEX.
+
+SET PARAMETER ID 'BES' FIELD GS_DISP-EBELN.
+CALL TRANSACTION 'ME23N'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_EVENT .
+
+  CREATE OBJECT GO_EVENT_RECEIVER.
+
+  SET HANDLER GO_EVENT_RECEIVER-&gt;HANDLE_HOTSPOT_CLICK FOR GO_GRID.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form READ_PO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM READ_PO USING PS_ROW TYPE LVC_S_ROW.
+
+  READ TABLE GT_DISP INTO GS_DISP INDEX PS_ROW-INDEX.
+
+  SET PARAMETER ID 'BES' FIELD GS_DISP-EBELN.
+  CALL TRANSACTION 'ME23N'.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0320F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0320F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0320F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0320F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_FILE_PATH</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+FORM get_master_data .
+  CLEAR gt_disp.
+
+
+
+<font color ="#0000FF">* 구매문서 데이터 조회</font>
+  SELECT pernr  emnam sexty entdt grade bthdt erdat erzet ernam
+    INTO CORRESPONDING FIELDS OF TABLE gt_disp
+    FROM yt206_0020.
+  SORT gt_disp BY pernr.
+
+  SELECT * FROM dd07t
+    INTO CORRESPONDING FIELDS OF TABLE gt_dd07t
+    WHERE domname IN ('YD206_0020', 'YD206_0030').
+
+  SELECT pernr
+    INTO TABLE gt_pernr
+    FROM yt206_0020.
+  SORT gt_pernr BY pernr.
+
+  LOOP AT  gt_disp INTO gs_disp .
+
+    PERFORM get_sexty USING gs_disp-sexty
+                      CHANGING gs_disp-sexty_text.
+
+    PERFORM get_grade USING gs_disp-grade
+                      CHANGING gs_disp-grade_text.
+
+    MODIFY gt_disp FROM gs_disp .
+
+  ENDLOOP .
+
+
+  LOOP AT gt_disp INTO gs_disp.
+    gs_disp-stat = icon_led_green.
+    MODIFY gt_disp FROM gs_disp.
+  ENDLOOP.
+ENDFORM.
+
+FORM get_file_path .
+
+  DATA : lt_file_table TYPE filetable, "인터널 테이블 &lt;&lt; filetable 타입이 이터널 테이블
+         ls_file_table TYPE file_table,
+         lv_rc         TYPE i.
+
+  CALL METHOD cl_gui_frontend_services=&gt;file_open_dialog
+    EXPORTING
+      window_title = '사원정보 업로드 파일'
+<font color ="#0000FF">*     default_extension       =</font>
+<font color ="#0000FF">*     default_filename        =</font>
+      file_filter  = 'EXCEL FILES (*.XLSX)|*.XLSX|EXCEL FILES (*.XLS)|*.XLS|'
+<font color ="#0000FF">*     with_encoding           =</font>
+<font color ="#0000FF">*     initial_directory       =</font>
+<font color ="#0000FF">*     multiselection          =</font>
+    CHANGING
+      file_table   = lt_file_table
+      rc           = lv_rc
+<font color ="#0000FF">*     user_action  =</font>
+<font color ="#0000FF">*     file_encoding           =</font>
+<font color ="#0000FF">*    EXCEPTIONS</font>
+<font color ="#0000FF">*     file_open_dialog_failed = 1</font>
+<font color ="#0000FF">*     cntl_error   = 2</font>
+<font color ="#0000FF">*     error_no_gui = 3</font>
+<font color ="#0000FF">*     not_supported_by_gui    = 4</font>
+<font color ="#0000FF">*     others       = 5</font>
+    .
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   Implement suitable error handling here</font>
+  ENDIF.
+
+  READ TABLE lt_file_table INTO ls_file_table INDEX 1.
+
+  p_path = ls_file_table-filename.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form UPLOAD_FROM_EXCEL</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM upload_from_excel .
+
+  DATA : lt_intern LIKE TABLE OF alsmex_tabline.
+  DATA : ls_intern LIKE alsmex_tabline.
+
+
+  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'
+    EXPORTING
+      filename                = p_path
+      i_begin_col             = 1
+      i_begin_row             = 2
+      i_end_col               = 6
+      i_end_row               = 10000
+    TABLES
+      intern                  = lt_intern
+    EXCEPTIONS
+      inconsistent_parameters = 1
+      upload_ole              = 2
+      OTHERS                  = 3.
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE s008 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING.
+  ENDIF.
+
+  CLEAR : gt_disp, gs_disp.
+
+
+
+  LOOP AT lt_intern INTO ls_intern.
+
+    AT NEW row.
+      gs_disp-stat = icon_led_green.
+    ENDAT.
+
+    CASE ls_intern-col.
+      WHEN 1.
+        gs_disp-pernr = ls_intern-value.
+      WHEN 2.
+        gs_disp-emnam = ls_intern-value.
+      WHEN 3.
+        gs_disp-sexty = ls_intern-value.
+      WHEN 4.
+
+        REPLACE ALL OCCURRENCES OF '.' IN ls_intern-value WITH ''.
+        REPLACE ALL OCCURRENCES OF '/' IN ls_intern-value WITH ''.
+        REPLACE ALL OCCURRENCES OF '-' IN ls_intern-value WITH ''.
+
+        gs_disp-entdt = ls_intern-value.
+      WHEN 5.
+        gs_disp-grade = ls_intern-value.
+      WHEN 6.
+
+        REPLACE ALL OCCURRENCES OF '.' IN ls_intern-value WITH ''.
+        REPLACE ALL OCCURRENCES OF '/' IN ls_intern-value WITH ''.
+        REPLACE ALL OCCURRENCES OF '-' IN ls_intern-value WITH ''.
+
+        gs_disp-bthdt = ls_intern-value.
+
+      WHEN OTHERS.
+    ENDCASE.
+
+    AT END OF row.
+
+      IF  gs_disp-sexty IS NOT INITIAL.
+
+        PERFORM get_sexty USING gs_disp-sexty
+                  CHANGING gs_disp-sexty_text.
+        IF sy-subrc = 0.
+          gs_disp-sexty_text = gs_disp-sexty_text.
+        ELSE.
+
+          PERFORM set_err USING TEXT-e01
+                          CHANGING gs_disp-stat
+                                   gs_disp-result.
+        ENDIF.
+      ENDIF.
+
+
+      IF  gs_disp-grade IS NOT INITIAL.
+        PERFORM get_grade USING gs_disp-grade
+                          CHANGING gs_disp-grade_text.
+        IF sy-subrc = 0.
+          gs_disp-grade_text = gs_disp-grade_text.
+        ELSE.
+
+          PERFORM set_err USING TEXT-e02
+                CHANGING gs_disp-stat
+                         gs_disp-result.
+        ENDIF.
+      ENDIF.
+
+
+      IF gs_disp-pernr IS INITIAL OR
+          gs_disp-emnam IS INITIAL.
+
+        PERFORM set_err USING TEXT-e03
+                        CHANGING gs_disp-stat
+                                 gs_disp-result.
+
+      ENDIF.
+
+      IF gs_disp-entdt IS NOT INITIAL.
+
+        CALL FUNCTION 'DATE_CHECK_PLAUSIBILITY'
+          EXPORTING
+            date                      = gs_disp-entdt
+          EXCEPTIONS
+            plausibility_check_failed = 1
+            OTHERS                    = 2.
+        IF sy-subrc &lt;&gt; 0.
+          "에러셋팅
+          PERFORM set_err USING    TEXT-e04   "입사일이 형식에 맞지 않습니다.
+                          CHANGING gs_disp-stat
+                                   gs_disp-result.
+        ENDIF.
+
+      ENDIF.
+
+      IF gs_disp-bthdt IS NOT INITIAL.
+
+        CALL FUNCTION 'DATE_CHECK_PLAUSIBILITY'
+          EXPORTING
+            date                      = gs_disp-bthdt
+          EXCEPTIONS
+            plausibility_check_failed = 1
+            OTHERS                    = 2.
+        IF sy-subrc &lt;&gt; 0.
+          "에러셋팅
+          PERFORM set_err USING    TEXT-e05   "입사일이 형식에 맞지 않습니다.
+                          CHANGING gs_disp-stat
+                                   gs_disp-result.
+        ENDIF.
+
+      ENDIF.
+
+      READ TABLE gt_pernr INTO gs_pernr WITH KEY pernr = gs_disp-pernr
+                                                         BINARY SEARCH.
+      IF sy-subrc = 0.
+        "에러셋팅
+        PERFORM set_err USING    TEXT-e06   "이미 등록된 사원번호 입니다.
+                        CHANGING gs_disp-stat
+                                 gs_disp-result.
+      ENDIF.
+
+
+      gs_disp-erdat = sy-datum.
+      gs_disp-erzet = sy-uzeit.
+      gs_disp-ernam = sy-uname.
+      APPEND gs_disp TO gt_disp.
+      CLEAR gs_disp.
+
+    ENDAT.
+
+
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_MASTER_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_SEXTY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_SEXTY  text</font>
+<font color ="#0000FF">*      &lt;--P_GS_DISP_SEXTY_TEXT  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_sexty  USING    p_gs_disp_sexty
+                CHANGING p_gs_disp_sexty_text.
+
+  CLEAR p_gs_disp_sexty_text.
+
+  READ TABLE gt_dd07t  WITH KEY domname = 'YD206_0020'
+                              domvalue_l =  p_gs_disp_sexty.
+
+  IF sy-subrc = 0.
+    p_gs_disp_sexty_text = gt_dd07t-ddtext.
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_GRADE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_GRADE  text</font>
+<font color ="#0000FF">*      &lt;--P_GS_DISP_GRADE_TEXT  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_grade  USING    p_gs_disp_grade
+                CHANGING p_gs_disp_grade_text.
+
+  CLEAR p_gs_disp_grade_text.
+
+  READ TABLE gt_dd07t  WITH KEY domname = 'YD206_0030'
+                              domvalue_l =  p_gs_disp_grade.
+
+  IF sy-subrc = 0.
+    p_gs_disp_grade_text = gt_dd07t-ddtext.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_DATA_CHANGED</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      &lt;--P_ER_DATA_CHANGED  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_data_changed  CHANGING p_er_data_changed TYPE REF TO cl_alv_changed_data_protocol.
+
+  DATA : ls_modi TYPE lvc_s_modi.
+  DATA : lt_modi TYPE lvc_t_modi.
+  DATA : lv_value TYPE dd07t-ddtext.
+
+  lt_modi = p_er_data_changed-&gt;mt_good_cells.
+
+  LOOP AT lt_modi INTO ls_modi.
+
+<font color ="#0000FF">*    AT FIRST.</font>
+<font color ="#0000FF">*    ENDAT.</font>
+
+<font color ="#0000FF">*    AT NEW ROW_ID.</font>
+
+    IF ls_modi-fieldname = 'SEXTY'.
+
+      PERFORM get_sexty USING ls_modi-value
+                  CHANGING lv_value.
+
+      CALL METHOD p_er_data_changed-&gt;modify_cell
+        EXPORTING
+          i_row_id    = ls_modi-row_id
+<font color ="#0000FF">*         I_TABIX     =</font>
+          i_fieldname = 'SEXTY_TEXT'
+          i_value     = lv_value.
+
+    ELSEIF ls_modi-fieldname = 'GRADE'.
+
+      PERFORM get_grade USING ls_modi-value
+            CHANGING lv_value.
+
+      CALL METHOD p_er_data_changed-&gt;modify_cell
+        EXPORTING
+          i_row_id    = ls_modi-row_id
+<font color ="#0000FF">*         I_TABIX     =</font>
+          i_fieldname = 'GRADE_TEXT'
+          i_value     = lv_value.
+
+    ENDIF.
+
+    CALL METHOD p_er_data_changed-&gt;modify_cell
+      EXPORTING
+        i_row_id    = ls_modi-row_id
+<font color ="#0000FF">*       I_TABIX     =</font>
+        i_fieldname = 'STAT'
+        i_value     = icon_led_yellow.
+
+<font color ="#0000FF">*    ENDAT.</font>
+
+<font color ="#0000FF">*    AT END OF row_id.</font>
+<font color ="#0000FF">*    ENDAT.</font>
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_DOUBLE_CLICK</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_ROW  text</font>
+<font color ="#0000FF">*      --&gt;P_E_COLUMN  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM handle_double_click  USING    p_e_row
+                                   p_e_column.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_alv_0100 .
+  IF go_docking_container IS INITIAL."이니셜 초기 상태를 나타냄
+
+    "오브잭트 생성
+
+    PERFORM reacte_object.
+
+    "필드카탈로그 셋팅
+
+    PERFORM set_filedcat.
+
+    "레이아웃 셋팅
+
+    PERFORM set_layout.
+
+    "솔트
+
+    PERFORM set_sort.
+
+    "EXCLUDE TOOLBAR 버튼
+
+    PERFORM set_exclude_toolbar.
+
+    "EVENT  등록
+
+    PERFORM set_event.
+
+    " GRID DISPLAY.
+
+    PERFORM display_gird.
+
+  ELSE.
+
+    IF gv_saved = 'x'.
+
+      CALL METHOD go_grid-&gt;set_ready_for_input
+        EXPORTING
+          i_ready_for_input = 0.
+
+    ENDIF.
+    "REFRESH
+    CALL METHOD go_grid-&gt;refresh_table_display.
+
+
+  ENDIF.
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REACTE_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM reacte_object .
+
+<font color ="#0000FF">*  CREATE OBJECT go_custom_container</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      container_name = 'GO_CUSTOM_CONTAINER'.</font>
+
+  CREATE OBJECT go_docking_container
+    EXPORTING
+      side      = cl_gui_docking_container=&gt;dock_at_left
+      extension = 2000.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*              WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+  ENDIF.
+
+
+  CREATE OBJECT go_grid
+    EXPORTING
+      i_parent = go_docking_container.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FILEDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_filedcat .
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STAT'.
+  gs_fieldcat-coltext = '상태'.
+  gs_fieldcat-key = 'x'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'PERNR'.
+  gs_fieldcat-coltext = '사번'.
+  gs_fieldcat-key = 'x'.
+  gs_fieldcat-hotspot = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'EMNAM'.
+  gs_fieldcat-coltext = '이름'.
+  gs_fieldcat-edit = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'SEXTY'.
+  gs_fieldcat-coltext = '성별'.
+  gs_fieldcat-edit = 'X'.
+  gs_fieldcat-ref_table = 'YT206_0020'.
+  gs_fieldcat-ref_field = 'SEXTY'.
+  gs_fieldcat-no_init_ch = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'SEXTY_TEXT'.
+  gs_fieldcat-coltext = '성별 내역'.
+  gs_fieldcat-edit = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'ENTDT'.
+  gs_fieldcat-coltext = '입사일'.
+  gs_fieldcat-edit = 'X'.
+  gs_fieldcat-ref_table = 'YT206_0020'.
+  gs_fieldcat-ref_field = 'ENTDT'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'GRADE'.
+  gs_fieldcat-coltext = '직급'.
+  gs_fieldcat-edit = 'X'.
+  gs_fieldcat-ref_table = 'YT206_0020'.
+  gs_fieldcat-ref_field = 'GRADE'.
+  gs_fieldcat-no_init_ch = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'GRADE_TEXT'.
+  gs_fieldcat-coltext = '직급 내역'.
+  gs_fieldcat-edit = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'BTHDT'.
+  gs_fieldcat-coltext = '생년월일'.
+  gs_fieldcat-ref_table = 'YT206_0020'.
+  gs_fieldcat-ref_field = 'BTHDT'.
+  gs_fieldcat-edit = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'RESULT'.
+  gs_fieldcat-coltext = '비고'.
+<font color ="#0000FF">*  GS_FIELDCAT-EDIT = 'X'.</font>
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+  "GS_LAYOUT-ZEBRA = 'X'. "퐁당포당
+  gs_layout-cwidth_opt = 'X'.  "데이터 크기 만큼 증가
+  gs_layout-sel_mode = 'D'. "드레그 가능
+  gs_layout-col_opt = 'X'. "컬럼 이름 크기 만큼 증가
+  gs_layout-no_rowins = 'X'. "라인 추가 안생기게함
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_sort .
+  CLEAR : gt_sort, gs_sort.
+
+  gs_sort-fieldname = 'PERNR'.
+<font color ="#0000FF">*  GS_SORT-DOWN      = 'X'.</font>
+  gs_sort-up        = 'X'.
+
+  APPEND gs_sort TO gt_sort.
+
+  CLEAR gs_sort.
+
+  gs_sort-fieldname = 'ENTDT'.
+  APPEND gs_sort TO gt_sort.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EXCLUDE_TOOLBAR</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_exclude_toolbar .
+  CLEAR : gt_excluding, gs_excluding.
+
+<font color ="#0000FF">* GS_EXCLUDING = '&PRINT'.</font>
+<font color ="#0000FF">* GS_EXCLUDING = CL_GUI_ALV_GRID=&gt;MC_FC_PRINT.</font>
+  gs_excluding = cl_gui_alv_grid=&gt;mc_fc_back_classic.
+
+  APPEND gs_excluding TO gt_excluding.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GIRD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM display_gird .
+  CALL METHOD go_grid-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout            = gs_layout
+      it_toolbar_excluding = gt_excluding
+    CHANGING
+      it_outtab            = gt_disp
+      it_fieldcatalog      = gt_fieldcat
+      it_sort              = gt_sort.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_event .
+
+<font color ="#0000FF">* EVENT RECEIVER 인서턴스 생성</font>
+  CREATE OBJECT go_event_receiver.
+
+  SET HANDLER go_event_receiver-&gt;handle_double_click FOR go_grid.
+  SET HANDLER go_event_receiver-&gt;handle_hotspot_click FOR go_grid.
+  SET HANDLER go_event_receiver-&gt;handle_data_changed  FOR go_grid.
+  SET HANDLER go_event_receiver-&gt;handle_toolbar FOR go_grid.
+  SET HANDLER go_event_receiver-&gt;handle_user_command FOR go_grid.
+
+  CALL METHOD go_grid-&gt;set_toolbar_interactive.
+
+  CALL METHOD go_grid-&gt;register_edit_event "데이터 별할때 행위를 설정해줘야함
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=&gt;mc_evt_modified.    "18.
+
+<font color ="#0000FF">*MC_EVT_ENTER.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM save_data .
+
+  DATA : lt_data TYPE TABLE OF yt206_0020,
+         ls_data TYPE          yt206_0020.
+
+<font color ="#0000FF">* 화면상에 에러 데이터가 있을경우 중지</font>
+  "에러메시지 호출(에러메시지가 존재합니다')
+  READ TABLE gt_disp INTO gs_disp WITH KEY stat = icon_led_red.
+  IF sy-subrc = 0.
+    MESSAGE s011 DISPLAY LIKE 'E'.    "에러메시지가 존재합니다
+    EXIT.
+  ENDIF.
+
+<font color ="#0000FF">* 필수필드 입력 체크</font>
+  LOOP AT gt_disp INTO gs_disp.
+    "기 저장 여부 체크
+    READ TABLE gt_pernr INTO gs_pernr WITH KEY pernr = gs_disp-pernr
+                                                       BINARY SEARCH.
+    IF sy-subrc = 0.
+      "에러셋팅
+      PERFORM set_err USING    TEXT-e06   "이미 등록된 사원번호 입니다.
+                      CHANGING gs_disp-stat
+                               gs_disp-result.
+    ENDIF.
+
+    "필수필드 입력 체크
+    IF gs_disp-pernr IS INITIAL OR
+       gs_disp-emnam IS INITIAL.
+      "에러셋팅
+      PERFORM set_err USING    TEXT-e03   "사번 및 이름은 필수 입력 필드 입니다
+                      CHANGING gs_disp-stat
+                               gs_disp-result.
+    ENDIF.
+
+    MODIFY gt_disp FROM gs_disp.
+
+    "저장 데이터 구성
+    CLEAR ls_data.
+    MOVE-CORRESPONDING gs_disp TO ls_data.
+
+    ls_data-erdat = sy-datum.
+    ls_data-erzet = sy-uzeit.
+    ls_data-ernam = sy-uname.
+
+    APPEND ls_data TO lt_data.
+
+  ENDLOOP.
+
+  "에러가 있을경우 중지
+  "아이콘 필드는 빨간색, 비고에 에러내역 표시
+  READ TABLE gt_disp INTO gs_disp WITH KEY stat = icon_led_red.
+  IF sy-subrc = 0.
+    MESSAGE s011 DISPLAY LIKE 'E'.
+    EXIT.
+  ENDIF.
+
+<font color ="#0000FF">* 저장데이터 취합(에러가 없을경우)</font>
+
+<font color ="#0000FF">* 데이터 저장</font>
+  "실패 시 오류메시지 호출(저장 중 오류가 발생하였습니다)
+  "성공 시 아래 절차 수행
+  INSERT yt206_0020 FROM TABLE lt_data ACCEPTING DUPLICATE KEYS.
+  IF sy-subrc = 0.
+    COMMIT WORK.
+
+    "화면에 녹색 비고 클리어
+    gs_disp-stat = icon_led_green.
+    gs_disp-result = ''.
+    MODIFY gt_disp FROM gs_disp TRANSPORTING stat result
+                                        WHERE pernr IS NOT INITIAL.
+
+    gv_saved = 'x'.
+
+  ELSE.
+    ROLLBACK WORK.
+    gs_disp-stat = icon_led_red.
+    gs_disp-result = '저장 중 오류가 발생하였습니다.'.
+    MODIFY gt_disp FROM gs_disp TRANSPORTING stat result
+                                        WHERE pernr IS NOT INITIAL.
+
+    gv_saved = ''.
+
+  ENDIF.
+
+
+<font color ="#0000FF">* 화면데이터 반영</font>
+  "=&gt; ICON(녹색), 비고필드 초기화
+
+<font color ="#0000FF">* 입력 불가 처리</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ERR</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_TEXT_E01  text</font>
+<font color ="#0000FF">*      &lt;--P_GS_DISP_STAT  text</font>
+<font color ="#0000FF">*      &lt;--P_GS_DISP_RESULT  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_err  USING    p_text
+              CHANGING p_gs_disp_stat
+                       p_gs_disp_result.
+
+
+  p_gs_disp_stat = icon_led_red.
+  IF p_gs_disp_result IS INITIAL.
+    p_gs_disp_result = p_text.
+  ELSE.
+    CONCATENATE p_gs_disp_result p_text INTO p_gs_disp_result
+    SEPARATED BY '  /  '.
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form TOOLBAR_PART</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_E_OBJECT  text</font>
+<font color ="#0000FF">*      --&gt;P_E_INTERACTIVE  text</font>
+
+<font color ="#0000FF">* FUNCTION  1   UI_FUNC   CHAR      70  0</font>
+<font color ="#0000FF">* ICON      1   ICONNAME  CHAR      30  0 아이콘이름</font>
+<font color ="#0000FF">* QUICKINFO 1   ICONQUICK CHAR      30  0 아이콘에 대한 Quickinfo</font>
+<font color ="#0000FF">* BUTN_TYPE 1   TB_BTYPE  INT4      10  0 툴바 버튼 유형</font>
+<font color ="#0000FF">* DISABLED  1             CHAR      1   0 사용불가능</font>
+<font color ="#0000FF">* TEXT      1   TEXT40    CHAR      40  0 텍스트 (40 문자)</font>
+<font color ="#0000FF">* CHECKED   1             CHAR      1   0 인쇄</font>
+<font color ="#0000FF">* LS_TOOLBAR-BUTN_TYPE = 3.  "수직 구분선  "버튼에 Context Menu를 가지고 있는 버튼삽입</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM toolbar_part  USING    p_e_object TYPE REF TO cl_alv_event_toolbar_set
+                            p_e_interactive.
+
+  DATA : ls_toolbar TYPE stb_button.
+
+  CLEAR ls_toolbar.
+  ls_toolbar-butn_type = 3.
+  APPEND ls_toolbar TO p_e_object-&gt;mt_toolbar.
+
+  CLEAR ls_toolbar.
+  ls_toolbar-function     = 'INS_LINE'.
+  ls_toolbar-icon         = icon_insert_row.
+  ls_toolbar-quickinfo    = '항목삽입 하는 것인 버튼 입다잉.' .
+  ls_toolbar-text         = '항목삽입'.
+  APPEND ls_toolbar TO p_e_object-&gt;mt_toolbar.
+
+  CLEAR ls_toolbar.
+  ls_toolbar-butn_type = 3.
+  APPEND ls_toolbar TO p_e_object-&gt;mt_toolbar.
+
+  CLEAR ls_toolbar.
+  ls_toolbar-function = 'DEL_ROW'.
+  ls_toolbar-icon         = icon_delete_row.
+  ls_toolbar-quickinfo    = '항목삭제 하는 것인 버튼 입다잉.' .
+  ls_toolbar-text         = '항목삭제'.
+  APPEND ls_toolbar TO p_e_object-&gt;mt_toolbar.
+
+
+  CLEAR ls_toolbar.
+  ls_toolbar-function = 'SAVE'.
+  ls_toolbar-icon         = icon_system_save.
+  ls_toolbar-quickinfo    = '저장 하는 것인 버튼 입다잉.' .
+  ls_toolbar-text         = '저장'.
+  APPEND ls_toolbar TO p_e_object-&gt;mt_toolbar.
+
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

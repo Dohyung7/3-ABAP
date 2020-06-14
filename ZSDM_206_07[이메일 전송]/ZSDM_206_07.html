@@ -1,0 +1,452 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_07</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_07</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  이메일 전송</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZSDM_206_07</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*& 물류쪽 bdc 만들어서 오더를 출고 까지 한번에 시킨뒤에</font>
+<font color ="#0000FF">*& 메모리 값 이용해서 콜 트랜잭션으로 메일 전송 연동 시키기</font>
+<font color ="#0000FF">*& 메모리 값은 오더 번호만 가져오면 됨</font>
+<font color ="#0000FF">*& 특이사항 오더번호는 앞에 00000 꼭 있어야함.</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT zsdm_206_07.
+
+
+DATA : email_add TYPE char255, email TYPE sza5_d0700-smtp_addr,
+       data_1    TYPE char255,data_2 TYPE char255,
+       data_3    LIKE p0001-begda.
+
+DATA : send_request       TYPE REF TO cl_bcs.
+DATA : document           TYPE REF TO cl_document_bcs.
+DATA : sender             TYPE REF TO cl_sapuser_bcs.
+DATA : recipient          TYPE REF TO if_recipient_bcs.
+DATA : exception_info TYPE REF TO if_os_exception_info,
+       bcs_exception  TYPE REF TO cx_bcs,
+       t_hex          TYPE solix_tab,
+       t_text         TYPE soli_tab,
+       w_text         LIKE LINE OF t_text,
+       html_string    TYPE string,
+       xhtml_string   TYPE xstring,
+       v_message(100),
+       v_mail         TYPE sza5_d0700-smtp_addr.
+
+
+CONSTANTS:
+  gc_subject TYPE so_obj_des VALUE 'OC_와인 도착 명세서', "메일 제목
+  gc_raw     TYPE char03 VALUE 'RAW'.
+
+CLEAR : html_string.
+
+DATA : BEGIN OF gs_vbap,
+         vbeln  TYPE vbap-vbeln ,  "판매 문서
+         posnr  TYPE vbap-posnr ,  "판매 문서 품목
+         matnr  TYPE vbap-matnr ,  "자재명
+         arktx  TYPE vbap-arktx , "품명
+         klmeng TYPE vbap-klmeng , "수량
+         meins  TYPE vbap-meins , "단위
+         netwr  TYPE vbap-netwr , "가격
+         waerk  TYPE vbap-waerk , "단위
+       END OF gs_vbap.
+
+
+DATA : BEGIN OF gs_vbak,
+         vbeln TYPE vbak-vbeln, "판매 문서
+         kunnr TYPE vbak-kunnr, "판매처 번호
+       END OF gs_vbak.
+
+DATA : BEGIN OF gs_kna1, "고객마스터의 일반데이타
+         kunnr TYPE kna1-kunnr, "판매처 번호
+         name1 TYPE kna1-name1, "고객명
+         stras TYPE kna1-stras, "주소
+         adrnr TYPE kna1-adrnr, "메일 키 주소
+       END OF gs_kna1.
+
+DATA : BEGIN OF gs_adr6, "전자메일 주소(근무처 주소 관리)
+         addrnumber TYPE adr6-addrnumber, "주소 번호
+         smtp_addr  TYPE adr6-smtp_addr, "이메일 주소
+       END OF gs_adr6.
+
+DATA : BEGIN OF gs_bp001,
+         partner    TYPE bp001-partner, "판매처번호
+         unw_remark TYPE bp001-unw_remark,  "불량
+       END OF gs_bp001.
+
+
+DATA : gt_vbap  LIKE TABLE OF gs_vbap, "영업문서: 품목데이타
+       gt_vbak  LIKE TABLE OF gs_vbak, "영업문서: 헤더데이타
+       gt_kna1  LIKE TABLE OF gs_kna1, "고객마스터의 일반데이타
+       gt_adr6  LIKE TABLE OF gs_adr6, "전자메일 주소(근무처 주소 관리)
+       gt_bp001 LIKE TABLE OF gs_bp001. "판매처번호
+
+SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE gt_vbak
+  FROM vbak
+  WHERE vbeln = '0000032693'.
+
+SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE gt_vbap
+  FROM vbap
+  WHERE vbeln = '0000032693'.
+
+SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE gt_kna1
+  FROM kna1
+  WHERE land1 = 'FR' AND kunnr LIKE 'OC-%'.
+
+SELECT *
+  INTO CORRESPONDING FIELDS OF TABLE gt_bp001
+  FROM bp001
+  WHERE partner LIKE 'OC-%'.
+
+
+
+
+LOOP AT gt_vbap INTO gs_vbap.
+
+  DATA : loop_data TYPE char255.
+
+
+  IF loop_data &lt;&gt; gs_vbap-vbeln.
+    loop_data = gs_vbap-vbeln.
+
+    READ TABLE gt_vbak INTO gs_vbak WITH KEY vbeln = gs_vbap-vbeln.
+
+    IF sy-subrc = '0'.
+
+      READ TABLE gt_kna1 INTO gs_kna1 WITH KEY kunnr = gs_vbak-kunnr.
+
+      IF sy-subrc = '0'.
+
+        email_add = gs_kna1-adrnr.
+
+        SELECT *
+          INTO CORRESPONDING FIELDS OF TABLE gt_adr6
+          FROM adr6
+          WHERE addrnumber EQ email_add.
+
+        READ TABLE gt_adr6 INTO gs_adr6 INDEX 1.
+
+        IF sy-subrc = '0'.
+
+          v_mail = gs_adr6-smtp_addr.
+
+        ENDIF.
+
+      ENDIF.
+
+      PERFORM h_tag1.
+      CONCATENATE '고객명 :' gs_kna1-name1 INTO data_1 SEPARATED BY ' '.
+      MOVE data_1 TO w_text.
+      APPEND w_text TO t_text.
+      PERFORM h_tag2.
+      CLEAR data_1.
+
+
+
+      READ TABLE gt_bp001 INTO gs_bp001 WITH KEY partner = gs_vbak-kunnr.
+
+      IF sy-subrc = '0'.
+
+      ENDIF.
+
+    ENDIF.
+
+  ENDIF.
+
+  PERFORM h_tag3.
+  CONCATENATE '제품 :' gs_vbap-arktx INTO data_1 SEPARATED BY ' '.
+  MOVE data_1 TO w_text.
+  APPEND w_text TO t_text.
+  PERFORM h_tag4.
+  CLEAR data_1.
+  CASE gs_vbap-matnr.
+    WHEN 'OC-02-F01'.
+      PERFORM p_tag1.
+      data_1 = '&lt;img src="C:\Download\a1.png"&gt;'.
+      MOVE data_1 TO w_text.
+      APPEND w_text TO t_text.
+      PERFORM p_tag2.
+      CLEAR data_1.
+    WHEN 'OC-02-F02'.
+      PERFORM p_tag1.
+      data_1 = '&lt;img src="C:\Download\a2.png"&gt;'.
+      MOVE data_1 TO w_text.
+      APPEND w_text TO t_text.
+      PERFORM p_tag2.
+      CLEAR data_1.
+    WHEN 'OC-02-F03'.
+      PERFORM p_tag1.
+      data_1 = '&lt;img src="C:\Download\a3.png"&gt;'.
+      MOVE data_1 TO w_text.
+      APPEND w_text TO t_text.
+      PERFORM p_tag2.
+      CLEAR data_1.
+    WHEN 'OC-02-F04'.
+      PERFORM p_tag1.
+      data_1 = '&lt;img src="C:\Download\a4.png"&gt;'.
+      MOVE data_1 TO w_text.
+      APPEND w_text TO t_text.
+      PERFORM p_tag2.
+      CLEAR data_1.
+  ENDCASE.
+
+
+
+  data_2 = gs_vbap-klmeng.
+  CONCATENATE '수량 :' data_2 INTO data_1 SEPARATED BY ' '.
+  MOVE data_1 TO w_text.
+  APPEND w_text TO t_text.
+  MOVE gs_vbap-meins TO w_text.
+  APPEND w_text TO t_text.
+  PERFORM p_tag2.
+  CLEAR data_1.
+  CLEAR data_2.
+
+  data_2 = '가격 : '.
+<font color ="#0000FF">*  CONCATENATE '가격 :' gs_vbap-netwr INTO data_1 SEPARATED BY ' '.</font>
+  MOVE data_2 TO w_text.
+  APPEND w_text TO t_text.
+  MOVE gs_vbap-netwr TO w_text.
+  APPEND w_text TO t_text.
+  MOVE gs_vbap-waerk TO w_text.
+  APPEND w_text TO t_text.
+  PERFORM p_tag2.
+  CLEAR data_1.
+  CLEAR data_2.
+
+  PERFORM hr_tag.
+
+
+
+ENDLOOP.
+
+CALL FUNCTION 'RP_CALC_DATE_IN_INTERVAL'
+  EXPORTING
+    date      = sy-datum
+    days      = '02'
+    months    = '00'
+    years     = '00'
+    signum    = '+'
+  IMPORTING
+    calc_date = data_3.
+
+PERFORM p_tag1.
+CONCATENATE '주소 :' gs_kna1-stras INTO data_1 SEPARATED BY ' '.
+MOVE data_1 TO w_text.
+APPEND w_text TO t_text.
+PERFORM p_tag2.
+CLEAR data_1.
+
+PERFORM p_tag1.
+CONCATENATE '도착 예정 날 :' data_3+0(4) '년' data_3+4(2) '월' data_3+6(2) '일' INTO data_1 SEPARATED BY ' '.
+MOVE data_1 TO w_text.
+APPEND w_text TO t_text.
+PERFORM p_tag2.
+CLEAR data_1.
+
+
+
+
+
+
+
+TRY.
+<font color ="#0000FF">*    지속적 전송 요청 작성</font>
+    send_request = cl_bcs=&gt;create_persistent( ).
+
+<font color ="#0000FF">*    LOOP AT t_html.</font>
+<font color ="#0000FF">*      t_html-test1 = '&lt;p&gt;'.</font>
+<font color ="#0000FF">*      t_html-test2 = '&lt;/p&gt;'.</font>
+<font color ="#0000FF">*      MOVE t_html TO w_text.</font>
+<font color ="#0000FF">*      APPEND w_text TO t_text.</font>
+<font color ="#0000FF">*    ENDLOOP.</font>
+
+    document = cl_document_bcs=&gt;create_document(
+      i_type    = 'HTM'
+      i_text    = t_text
+      "i_hex    = t_hex
+      i_subject = gc_subject ).
+
+<font color ="#0000FF">*     요청을 보낼 문서 추가</font>
+    CALL METHOD send_request-&gt;set_document( document ).
+
+<font color ="#0000FF">*     발신자 개체 가져 오기</font>
+    sender = cl_sapuser_bcs=&gt;create( sy-uname ).
+
+<font color ="#0000FF">*     발신자 추가</font>
+    CALL METHOD send_request-&gt;set_sender
+      EXPORTING
+        i_sender = sender.
+
+<font color ="#0000FF">*    v_mail = 'podndwls@naver.com'.</font>
+
+    recipient = cl_cam_address_bcs=&gt;create_internet_address( v_mail ).
+<font color ="#0000FF">*       요청을 보내기 위해 해당 속성을 가진 수신자 추가</font>
+    CALL METHOD send_request-&gt;add_recipient
+      EXPORTING
+        i_recipient = recipient.
+
+
+<font color ="#0000FF">*     등 반송 이메일이 필요하지 않습니다</font>
+    DATA: status_mail TYPE bcs_stml.
+    status_mail = 'N'.
+
+    CALL METHOD send_request-&gt;set_status_attributes
+      EXPORTING
+        i_requested_status = status_mail
+        i_status_mail      = status_mail.
+
+<font color ="#0000FF">*     즉시 보내기 플래그 설정</font>
+    send_request-&gt;set_send_immediately( 'X' ).
+
+<font color ="#0000FF">*     문서 보내기</font>
+    CALL METHOD send_request-&gt;send( ).
+
+    COMMIT WORK.
+
+  CATCH cx_bcs INTO bcs_exception.
+    v_message = bcs_exception-&gt;get_text( ).
+    RAISE mail_sent_failed.
+
+
+ENDTRY.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form P_TAG</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM p_tag1 .
+
+  DATA : data TYPE char255.
+  data = '&lt;p&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form P_TAG2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM p_tag2 .
+
+  DATA : data TYPE char255.
+  data = '&lt;/p&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HR_TAG1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM hr_tag .
+
+  DATA : data TYPE char255.
+  data = '&lt;hr color="black"&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form H_TAG1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM h_tag1 .
+
+  DATA : data TYPE char255.
+  data = '&lt;h1&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form H_TAG2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM h_tag2 .
+
+  DATA : data TYPE char255.
+  data = '&lt;/h1&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form H_TAG3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM h_tag3 .
+
+  DATA : data TYPE char255.
+  data = '&lt;h3&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form H_TAG4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM h_tag4 .
+
+  DATA : data TYPE char255.
+  data = '&lt;/h3&gt;'.
+
+  MOVE data TO w_text.
+  APPEND w_text TO t_text.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

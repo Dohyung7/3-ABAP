@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_03</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_03</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  물류 EDI 현황 상</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZSDM_206_03</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*& 문서 상세보기 버튼 삭제 가능 여부 핫스팟 쓰면 더 좋을 듯.</font>
+<font color ="#0000FF">*& 메모리 값 받아서 뿌려주기 o</font>
+<font color ="#0000FF">*& 상태 대조할 CBO TABLE 만들기</font>
+<font color ="#0000FF">*& 상태 저장할 테이블 만들기</font>
+<font color ="#0000FF">*& 배치를 이용하여 전송 비전송 구분 하기</font>
+<font color ="#0000FF">*& 언제 날짜인지 출고 댓는지 오더 날짜 + 출고로 내역 변경 하기</font>
+<font color ="#0000FF">*& 중복 코드가 다 수 있음 제거할 것</font>
+<font color ="#0000FF">*& 주석 달 것</font>
+<font color ="#0000FF">*& 모듈화 시키기</font>
+<font color ="#0000FF">*& 경호 메세지</font>
+<font color ="#0000FF">*& 트랜잭션 bdc 태울지 결정하기</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT zsdm_206_03 MESSAGE-ID ym206.
+
+include <a href ="zsdm_206_03cls.html">zsdm_206_03cls</a>.
+include <a href ="zsdm_206_03top.html">zsdm_206_03top</a>.
+include <a href ="zsdm_206_03sel.html">zsdm_206_03sel</a>.
+include <a href ="zsdm_206_03f01.html">zsdm_206_03f01</a>.
+include <a href ="zsdm_206_03i01.html">zsdm_206_03i01</a>.
+include <a href ="zsdm_206_03o01.html">zsdm_206_03o01</a>.
+
+
+INITIALIZATION.
+
+
+  DATA : gv_carrid2 TYPE char255.
+
+<font color ="#0000FF">*GET PARAMETER ID 'TEST206' FIELD gv_test. " 메모리 값 가져오기</font>
+
+
+
+  bb = gv_test.
+
+
+START-OF-SELECTION.
+
+  PERFORM get_data.
+
+  CALL SCREEN 0100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* 0100 --&gt;  SET TITLEBAR '0100'.</font>
+<font color ="#0000FF">* 0100 --&gt;  SET TITLEBAR '0100'.</font>
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* P_RA1         재고입고</font>
+<font color ="#0000FF">* P_RA2         판매오더</font>
+<font color ="#0000FF">* P_RA3         재고출고</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM206</font>
+<font color ="#0000FF">*000</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

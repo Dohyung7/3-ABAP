@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZSDM_206_06TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZSDM_206_06TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZSDM_206_04TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZSDM_206_04TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+TABLES : zsdm_206_01 ,zsdm_t_206_01.
+
+<font color ="#0000FF">*고객 VBAK  KUNNR</font>
+<font color ="#0000FF">*플랜트  likp  vstel</font>
+<font color ="#0000FF">*판매오더 VBAK  VBELN</font>
+<font color ="#0000FF">*판매오더일자 VBAK  erdat</font>
+<font color ="#0000FF">*출고일자 likp  WADAT_IST</font>
+<font color ="#0000FF">*고객도착일자	커스텀</font>
+<font color ="#0000FF">*계획납품기간 vbak  vdatu</font>
+<font color ="#0000FF">*납품기간	커스텀</font>
+<font color ="#0000FF">*갭  커스텀</font>
+<font color ="#0000FF">*상태	커스텀</font>
+
+
+DATA : aa TYPE char255,
+       bb TYPE char255,
+       cc TYPE char255.
+
+DATA : BEGIN OF gs_disp,
+         kunnr      TYPE vbak-kunnr,
+         werks      TYPE lips-werks,
+         vbeln      TYPE vbak-vbeln,
+         name1      TYPE kna1-name1,
+         erdat      TYPE vbak-erdat,
+         lfdat      TYPE likp-lfdat,
+         gidat      TYPE vbak-erdat,
+         unw_remark TYPE bp001-unw_remark,
+         sdtat      TYPE char255,
+         gigap      TYPE char255,
+         stat       TYPE icon-id,
+         lips_vbeln TYPE lips-vbeln, "납품키
+         index      TYPE lvc_index,
+       END OF gs_disp.
+
+DATA gt_disp LIKE TABLE OF gs_disp.
+DATA gt_data_set LIKE TABLE OF gs_disp.
+
+DATA : gv_carrid2 TYPE char255.
+DATA : txt_day_type_1 TYPE char255, txt_day_type_2 TYPE char255, txt_day_type_3 TYPE icon-id.
+
+<font color ="#0000FF">*GET PARAMETER ID 'TEST206' FIELD gv_carrid2.</font>
+
+DATA : go_custom_container TYPE REF TO cl_gui_custom_container,
+       go_grid             TYPE REF TO cl_gui_alv_grid,
+       go_event_receiver   TYPE REF TO lcl_event_receiver.
+
+DATA : gt_fieldcat TYPE lvc_t_fcat,
+       gs_fieldcat TYPE lvc_s_fcat,
+       gs_layout   TYPE lvc_s_layo.
+
+DATA : gt_index_rows TYPE lvc_t_row,
+       gt_roid       TYPE lvc_t_roid.
+
+DATA : gs_index_rows TYPE lvc_s_row.
+
+
+<font color ="#0000FF">*VBAK-VBELN 키</font>
+
+DATA : BEGIN OF gs_vbak, "영업문서: 헤더데이타
+         kunnr TYPE vbak-kunnr, "판매처 키
+         vbeln TYPE vbak-vbeln, "판매 문서
+         erdat TYPE vbak-erdat, "레코드생성일
+         vdatu TYPE vbak-vdatu, "납품 요청일
+       END OF gs_vbak.
+
+DATA gt_vbak1 LIKE TABLE OF gs_vbak.
+DATA gt_vbak2 LIKE TABLE OF gs_vbak.
+
+
+DATA : BEGIN OF gs_lips, "SD 문서: 납품: 품목 데이터
+         vbeln TYPE lips-vbeln, "납품 키
+         posnr TYPE lips-posnr, "납품품목 키
+         werks TYPE lips-werks, "플랜트
+         vgbel TYPE lips-vgbel, "참조 문서의 문서 번호 &lt;vbak-vbeln 이거랑 매칭
+       END OF gs_lips.
+
+DATA : gt_lips1220 LIKE TABLE OF gs_lips,
+       gt_lips1230 LIKE TABLE OF gs_lips.
+
+
+DATA : BEGIN OF gs_likp, "SD 문서: 납품 헤더데이타
+         vbeln TYPE likp-vbeln, "납품
+<font color ="#0000FF">*         vstel     TYPE likp-vstel, "출하 지점/입고 지점</font>
+         lfdat TYPE likp-lfdat, "납품일
+       END OF gs_likp.
+
+DATA gt_likp LIKE TABLE OF gs_likp.
+
+DATA : BEGIN OF gs_bp001, "FS 고유 속성, 조직
+         partner    TYPE bp001-partner, "비즈니스 파트너 번호
+         unw_remark TYPE bp001-unw_remark, "불량관련 주석 &lt;&lt; 납품 예정기간
+       END OF gs_bp001.
+
+DATA gt_bp001 LIKE TABLE OF gs_bp001.
+
+DATA : BEGIN OF gs_zsdm_206_01, "고객 도착일 저장소
+         vbeln TYPE zsdm_206_01-vbeln, "납품 문서번호
+         bpdat TYPE zsdm_206_01-bpdat, "납품 고객 실제 도착 일
+       END OF gs_zsdm_206_01.
+
+DATA gt_zsdm_206_01 LIKE TABLE OF gs_zsdm_206_01.
+
+DATA : BEGIN OF gs_set_kna1,
+         kunnr TYPE kna1-kunnr,
+         ort01 TYPE kna1-ort01,
+         name1 TYPE kna1-name1,
+       END OF gs_set_kna1.
+
+DATA : gt_set_kna1 LIKE TABLE OF gs_set_kna1.
+
+DATA ltab TYPE vrm_values WITH HEADER LINE. " SHIFT TYPE TEXT
+
+DATA : gt_fcode TYPE TABLE OF sy-ucomm.
+
+DATA : ok_code TYPE sy-ucomm.
+
+RANGES : list1 FOR kna1-name1,
+         list2 FOR kna1-name1,
+         list3 FOR icon-id.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

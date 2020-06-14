@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Y206_DOWNUP_F02</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: Y206_DOWNUP_F02</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          Y230_DOWNUP_F02</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  SET_GRID_ATTRIBUTE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM set_grid_attribute .
+
+<font color ="#0000FF">* Set Display Attribute</font>
+  PERFORM change_display_attribute  CHANGING gs_layout.
+
+<font color ="#0000FF">* Exclude Toolbar Functions</font>
+<font color ="#0000FF">*  PERFORM exclude_toolbar_functions USING 'GT_EXCLUDE'.</font>
+
+<font color ="#0000FF">* Set Field Category</font>
+  PERFORM  set_fieldcat.
+<font color ="#0000FF">*  PERFORM fill_field_category.</font>
+
+<font color ="#0000FF">* Set Sort Table</font>
+  PERFORM sort_itab                 TABLES gt_sort.
+
+ENDFORM. " SET_GRID_ATTRIBUTE
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  EXCLUDE_TOOLBAR_FUNCTIONS</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_0072   text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM exclude_toolbar_functions USING p_tabname.
+
+  FIELD-SYMBOLS : &lt;fs_table&gt; TYPE ui_functions.
+
+  DATA : ls_exclude   TYPE ui_func.
+  DATA : l_table_name LIKE feld-name.
+
+  CONCATENATE p_tabname '[]' INTO  l_table_name.
+  ASSIGN     (l_table_name)    TO &lt;fs_table&gt;.
+
+  PERFORM append_exclude_functions
+        TABLES &lt;fs_table&gt;
+         USING:
+                cl_gui_alv_grid=&gt;mc_fc_current_variant,
+                cl_gui_alv_grid=&gt;mc_fc_detail,
+                cl_gui_alv_grid=&gt;mc_fc_excl_all,
+                cl_gui_alv_grid=&gt;mc_fc_graph,
+                cl_gui_alv_grid=&gt;mc_fc_help,
+                cl_gui_alv_grid=&gt;mc_fc_html,
+                cl_gui_alv_grid=&gt;mc_fc_loc_undo,
+                cl_gui_alv_grid=&gt;mc_fc_loc_copy,          " 행 카피.
+                cl_gui_alv_grid=&gt;mc_fc_loc_copy_row,      " 행 카피.
+                cl_gui_alv_grid=&gt;mc_fc_loc_cut,           " 가위.
+                cl_gui_alv_grid=&gt;mc_fc_loc_insert_row.    " 행삽입
+<font color ="#0000FF">*                cl_gui_alv_grid=&gt;mc_fc_loc_move_row.</font>
+  PERFORM append_exclude_functions
+        TABLES &lt;fs_table&gt;
+         USING:
+                cl_gui_alv_grid=&gt;mc_fc_loc_delete_row,    " 행삭제.
+                cl_gui_alv_grid=&gt;mc_fc_loc_append_row.    " 라인생성.
+  PERFORM append_exclude_functions
+        TABLES &lt;fs_table&gt;
+         USING:
+                cl_gui_alv_grid=&gt;mc_fc_loc_paste,         " 겹쳐쓰기.
+                cl_gui_alv_grid=&gt;mc_fc_loc_paste_new_row, " 겹쳐쓰기.
+                cl_gui_alv_grid=&gt;mc_fc_refresh,
+                cl_gui_alv_grid=&gt;mc_fc_save_variant.
+
+ENDFORM. " EXCLUDE_TOOLBAR_FUNCTIONS
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  APPEND_EXCLUDE_FUNCTIONS</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_&lt;FS_TABLE&gt;  text</font>
+<font color ="#0000FF">*      --&gt;P_CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_AL  text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM append_exclude_functions TABLES p_table
+                                USING p_value.
+
+  DATA: ls_exclude TYPE ui_func.
+
+  ls_exclude = p_value.
+  APPEND ls_exclude TO p_table.
+
+ENDFORM. " EXCLUDE_TOOLBAR_FUNCTIONS
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  SET_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_GT_FIELDCAT1  text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM set_fieldcat.
+  CLEAR: gv_colps,  gt_fieldcat, gt_fieldcat[].
+  LOOP AT gt_fldcat.
+    PERFORM   fieldcat_assign    USING
+              gt_fldcat-fieldname
+              gt_fldcat-fieldname
+              ''  '' '' '' ''
+              gt_fldcat-just
+              gt_fldcat-key
+               ''  '' ''.
+  ENDLOOP.
+ENDFORM.                    " SET_FIELDCAT
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  FIELDCAT_ASSIGN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_0207   text</font>
+<font color ="#0000FF">*      --&gt;P_0208   text</font>
+<font color ="#0000FF">*      --&gt;P_0209   text</font>
+<font color ="#0000FF">*      --&gt;P_0210   text</font>
+<font color ="#0000FF">*      --&gt;P_0211   text</font>
+<font color ="#0000FF">*      --&gt;P_0212   text</font>
+<font color ="#0000FF">*      --&gt;P_0213   text</font>
+<font color ="#0000FF">*      --&gt;P_0214   text</font>
+<font color ="#0000FF">*      --&gt;P_0215   text</font>
+<font color ="#0000FF">*      --&gt;P_0216   text</font>
+<font color ="#0000FF">*      --&gt;P_0217   text</font>
+<font color ="#0000FF">*      --&gt;P_0218   text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM fieldcat_assign  USING   pv_fldnm
+                              pv_rddic
+                              pv_tabnm
+                              pv_otlen
+                              pv_reftab
+                              pv_reffield
+                              pv_hotspot
+                              pv_just
+                              pv_key
+                              pv_edit
+                              pv_currency
+                              pv_qfieldname.
+
+  DATA : ls_fieldcat  TYPE  lvc_s_fcat.
+
+  ADD      1  TO   gv_colps.
+
+  ls_fieldcat-col_pos         =   gv_colps.
+  ls_fieldcat-fieldname       =   pv_fldnm.
+  ls_fieldcat-coltext         =   pv_rddic.
+  ls_fieldcat-tabname         =   pv_tabnm.
+  ls_fieldcat-outputlen       =   pv_otlen.
+  ls_fieldcat-ref_field       =   pv_reffield.
+  ls_fieldcat-ref_table       =   pv_reftab.
+  ls_fieldcat-hotspot         =   pv_hotspot.
+  ls_fieldcat-just            =   pv_just.
+  ls_fieldcat-key             =   pv_key.
+  ls_fieldcat-edit            =   pv_edit.
+  ls_fieldcat-currency        =   pv_currency.
+  ls_fieldcat-qfieldname      =   pv_qfieldname.
+
+
+<font color ="#0000FF">*  CASE  pv_fldnm.</font>
+<font color ="#0000FF">*    WHEN 'ZSEQ'   OR 'CBEL1' OR 'COELP'  OR 'MXWGT'  OR 'MEINS'  OR</font>
+<font color ="#0000FF">*         'INCO1'  OR 'CBELN' OR 'VELCD'  OR 'VESLN'  OR 'ZROUTE' OR</font>
+<font color ="#0000FF">*         'LPETA'  OR 'LPETB' OR 'LPETD'  OR 'ULETA'  OR 'ULETB'  OR</font>
+<font color ="#0000FF">*         'ULETD'  OR 'ZSWAP' OR 'ZZSWAP' OR 'ZEBELN' OR 'ZBUKRS' OR</font>
+<font color ="#0000FF">*         'RESULT' OR 'MESSAGE'.</font>
+<font color ="#0000FF">*      ls_fieldcat-fix_column  = 'X'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDCASE.</font>
+
+  APPEND   ls_fieldcat        TO  gt_fieldcat.
+
+ENDFORM.                    " FIELDCAT_ASSIGN
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  CHANGE_DISPLAY_ATTRIBUTE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      &lt;--P_GS_LAYOUT1  text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM change_display_attribute CHANGING ps_layout TYPE lvc_s_layo.
+
+  CLEAR gs_layout.
+
+  gs_layout-cwidth_opt = 'X'.
+  gs_layout-zebra      = 'X'.
+  gs_layout-no_rowmark = ''.  "(or ' ')
+  gs_layout-sel_mode   = ''.  "A or D
+
+<font color ="#0000FF">*  gs_print-print       = 'X'.</font>
+ENDFORM. " CHANGE_DISPLAY_ATTRIBUTE
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  SORT_ITAB</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;PT_SORT  text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM sort_itab TABLES pt_sort TYPE lvc_t_sort.
+
+  DATA  : ls_sort   TYPE  lvc_s_sort .
+<font color ="#0000FF">*</font>
+  CLEAR : gt_sort, gt_sort[].
+
+<font color ="#0000FF">*  ls_sort-spos         =          1.</font>
+<font color ="#0000FF">*  ls_sort-fieldname     =        'CBEL1'.</font>
+<font color ="#0000FF">*  ls_sort-up            =        'X'.</font>
+<font color ="#0000FF">*  APPEND   ls_sort      TO        pt_sort.</font>
+
+<font color ="#0000FF">*  ls_sort-spos         =          2.</font>
+<font color ="#0000FF">*  ls_sort-fieldname     =        'COELP'.</font>
+<font color ="#0000FF">*  ls_sort-up            =        'X'.</font>
+<font color ="#0000FF">*  APPEND   ls_sort      TO        pt_sort.</font>
+
+<font color ="#0000FF">*  ls_sort-spos         =          3.</font>
+<font color ="#0000FF">*  ls_sort-fieldname     =        'CBELN'.</font>
+<font color ="#0000FF">*  ls_sort-up            =        'X'.</font>
+<font color ="#0000FF">*  APPEND   ls_sort      TO        pt_sort.</font>
+
+ENDFORM. " SORT_ITAB
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  GRID_DISPLAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM grid_display .
+  CALL METHOD go_grid-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout                     = gs_layout
+      it_toolbar_excluding          = gt_exclude
+      i_save                        = 'A' "BOTH USER SPECIFIC AND GLOBAL LAYOUTS CAN BE SAVED
+      i_default                     = 'X'
+      is_print                      = gs_print
+    CHANGING
+      it_outtab                     = &lt;gt_table&gt;[]
+      it_fieldcatalog               = gt_fieldcat[]
+      it_sort                       = gt_sort[]
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      OTHERS                        = 3.
+ENDFORM. " GRID_DISPLAY
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Form  REFRESH_DISPLAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">*  --&gt;  p1        text</font>
+<font color ="#0000FF">*  &lt;--  p2        text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+FORM refresh_display .
+
+  DATA:  ls_stable        TYPE lvc_s_stbl.
+  ls_stable-row = 1.
+  ls_stable-col = 1.
+
+  CALL METHOD go_grid-&gt;refresh_table_display
+    EXPORTING
+      is_stable = ls_stable
+    EXCEPTIONS
+      finished  = 1
+      OTHERS    = 2.
+
+ENDFORM.                    " REFRESH_DISPLAY
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

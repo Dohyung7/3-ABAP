@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0430</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0430</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  메모리 테스트</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report YR206_0430</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT YR206_0430.
+
+DATA : gv_carrid2 TYPE char255.
+
+GET PARAMETER ID 'TEST206' FIELD gv_carrid2.
+
+
+"GET PARAMETER를 통해 메모리 아디에 해당하는 값을 가져온 다음에 필드 뒤에 넣어줍니다.
+WRITE gv_carrid2.
+
+GET PARAMETER ID 'TEST206_2' FIELD gv_carrid2.
+
+WRITE gv_carrid2.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

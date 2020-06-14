@@ -1,0 +1,608 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR206_0370F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR206_0370F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include YR206_0370F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          YR206_0370F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form UPLOAD_FROM_EXCEL</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM upload_from_excel .
+
+  DATA : lt_intern TYPE TABLE OF alsmex_tabline,
+         ls_intern TYPE          alsmex_tabline.
+
+  CLEAR : gt_disp, gs_disp.
+
+<font color ="#0000FF">* UPLOAD EXCEL TO INTERNAL TABLE</font>
+  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'
+    EXPORTING
+      filename                = p_path
+      i_begin_col             = 1
+      i_begin_row             = 2
+      i_end_col               = 11
+      i_end_row               = 100
+    TABLES
+      intern                  = lt_intern
+    EXCEPTIONS
+      inconsistent_parameters = 1
+      upload_ole              = 2
+      OTHERS                  = 3.
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE s010 DISPLAY LIKE 'E'.    "EXCEL UPLOAD 중 오류가 발생하였습니다.
+  ENDIF.
+
+<font color ="#0000FF">* 출력 데이터로 변환</font>
+  CLEAR gs_disp.
+  LOOP AT lt_intern INTO ls_intern.
+
+    CASE ls_intern-col.
+      WHEN 1.
+        gs_disp-matnr = ls_intern-value.
+      WHEN 2.
+        gs_disp-mtart = ls_intern-value.
+      WHEN 3.
+        gs_disp-maktx = ls_intern-value.
+      WHEN 4.
+        gs_disp-meins = ls_intern-value.
+      WHEN 5.
+        gs_disp-matkl = ls_intern-value.
+      WHEN 6.
+        gs_disp-ekgrp = ls_intern-value.
+      WHEN 7.
+        gs_disp-dismm = ls_intern-value.
+      WHEN 8.
+        gs_disp-bklas = ls_intern-value.
+      WHEN 9.
+        gs_disp-stprs_1 = ls_intern-value.
+      WHEN 10.
+        gs_disp-peinh_1 = ls_intern-value.
+      WHEN 11.
+        gs_disp-vprsv_1 = ls_intern-value.
+    ENDCASE.
+
+    AT END OF row.  "ROW 가 끝나는 시점에 화면 테이블에 APPEND
+      gs_disp-stat = icon_led_yellow.   "DEFAULT 노란 아이콘 셋팅
+      gs_disp-werks = p_plnt.
+      APPEND gs_disp TO gt_disp.
+      CLEAR gs_disp.
+    ENDAT.
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_FILE_PATH</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_file_path .
+
+  DATA : lt_file_table TYPE filetable,
+         ls_file_table TYPE file_table,
+         lv_rc         TYPE i.
+
+  CALL METHOD cl_gui_frontend_services=&gt;file_open_dialog
+    EXPORTING
+      window_title = '파일파일파파이리꼬부기'
+      file_filter  = 'EXCEL FILES (*.XLSX)|*.XLSX|EXCEL FILES (*.XLS)|*.XLS|'
+    CHANGING
+      file_table   = lt_file_table
+      rc           = lv_rc.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   Implement suitable error handling here</font>
+  ENDIF.
+
+  READ TABLE lt_file_table INTO ls_file_table
+                           INDEX 1.
+  p_path = ls_file_table-filename.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_alv_0100 .
+  IF go_docking_container IS INITIAL.
+<font color ="#0000FF">*  OBJECT 생성.</font>
+
+    PERFORM create_obj.
+
+<font color ="#0000FF">*  FIELD CATALOG 생성.</font>
+    PERFORM create_fieldcat.
+
+<font color ="#0000FF">*  LAYOUT 세팅</font>
+    PERFORM set_layout.
+
+<font color ="#0000FF">*** EVENT 셋팅</font>
+<font color ="#0000FF">**    PERFORM SET_EVENT.</font>
+
+<font color ="#0000FF">*  METHOD 호출.</font>
+    PERFORM display_grid.
+
+  ELSE.
+
+    "화면 REFRESH
+    CALL METHOD go_grid-&gt;refresh_table_display.
+
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJ</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_obj .
+
+  CREATE OBJECT go_docking_container
+    EXPORTING
+      side      = cl_gui_docking_container=&gt;dock_at_left
+      extension = 2000.
+
+  CREATE OBJECT go_grid
+    EXPORTING
+      i_parent = go_docking_container.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_FIELDCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_fieldcat .
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STAT'.
+  gs_fieldcat-coltext = '상태'.
+  gs_fieldcat-key = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'WERKS'.
+  gs_fieldcat-coltext = '플랜트'.
+  gs_fieldcat-key = 'X'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MATNR'.
+  gs_fieldcat-coltext = '자재코드'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MAKTX'.
+  gs_fieldcat-coltext = '자재내역'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MTART'.
+  gs_fieldcat-coltext = 'MTART'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MATKL'.
+  gs_fieldcat-coltext = 'MATKL'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'MEINS'.
+  gs_fieldcat-coltext = 'MEINS'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'EKGRP'.
+  gs_fieldcat-coltext = 'EKGRP'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'DISMM'.
+  gs_fieldcat-coltext = 'DISMM'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'BKLAS'.
+  gs_fieldcat-coltext = 'BKLAS'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'STPRS_1'.
+  gs_fieldcat-coltext = 'STPRS_1'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'PEINH_1'.
+  gs_fieldcat-coltext = 'PEINH_1'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+  CLEAR gs_fieldcat.
+  gs_fieldcat-fieldname = 'VPRSV_1'.
+  gs_fieldcat-coltext = 'VPRSV_1'.
+  APPEND gs_fieldcat TO gt_fieldcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-zebra      = 'X'.
+  gs_layout-sel_mode   = 'D'.
+  gs_layout-cwidth_opt = 'A'.
+<font color ="#0000FF">*  GS_LAYOUT-NO_ROWINS  = 'X'.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM display_grid .
+
+  CALL METHOD go_grid-&gt;set_table_for_first_display
+    EXPORTING
+      is_layout       = gs_layout
+    CHANGING
+      it_outtab       = gt_disp
+      it_fieldcatalog = gt_fieldcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM save_data .
+
+  DATA : lv_answer TYPE char01.
+
+<font color ="#0000FF">* USER CONFIRM</font>
+  PERFORM user_confirm USING TEXT-m01   "'생성확인'
+                             TEXT-m02   "'자재마스터가 생성됩니다. 계속 진행하시겠습니까?'
+                       CHANGING lv_answer.
+
+  IF lv_answer &lt;&gt; '1'.
+    EXIT.
+  ENDIF.
+
+<font color ="#0000FF">* 데이터 처리</font>
+  gs_option-dismode = 'A'.      "A/N/E
+  gs_option-updmode = 'S'.
+  LOOP AT gt_disp INTO gs_disp.
+
+    "BDC 수행
+    PERFORM create_material USING    gs_disp-matnr
+                                     gs_disp-maktx
+                                     gs_disp-mtart
+                                     gs_disp-meins
+                                     gs_disp-matkl
+                                     gs_disp-ekgrp
+                                     gs_disp-dismm
+                                     gs_disp-bklas
+                                     gs_disp-stprs_1
+                                     gs_disp-peinh_1
+                                     gs_disp-vprsv_1
+
+                            CHANGING gs_disp-stat     "상태
+                                     gs_disp-result.  "결과
+
+    MODIFY gt_disp FROM gs_disp.
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form USER_CONFIRM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_TEXT_M01  text</font>
+<font color ="#0000FF">*      --&gt;P_TEXT_M02  text</font>
+<font color ="#0000FF">*      &lt;--P_LV_ANSWER  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM user_confirm  USING    p_title
+                            p_question
+                   CHANGING p_answer.
+
+  CLEAR p_answer.
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = p_title
+      text_question         = p_question
+      text_button_1         = 'YES'
+      text_button_2         = 'NO'
+      display_cancel_button = ''
+    IMPORTING
+      answer                = p_answer.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_MATERIAL</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_MATNR  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_MAKTX  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_MTART  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_MEINS  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_MATKL  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_EKGRP  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_DISMM  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_BKLAS  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_STPRS_1  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_PEINH_1  text</font>
+<font color ="#0000FF">*      --&gt;P_GS_DISP_VPRSV_1  text</font>
+<font color ="#0000FF">*      &lt;--P_GS_DISP_STAT  text</font>
+<font color ="#0000FF">*      &lt;--P_GS_DISP_RESULT  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_material  USING    p_matnr
+                               p_maktx
+                               p_mtart
+                               p_meins
+                               p_matkl
+                               p_ekgrp
+                               p_dismm
+                               p_bklas
+                               p_stprs_1
+                               p_peinh_1
+                               p_vprsv_1
+                      CHANGING p_stat
+                               p_result.
+
+  CLEAR : p_stat, p_result.
+  CLEAR : gt_bdc, gs_bdc, gt_msg, gs_msg.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '0060'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=ENTR'.
+  PERFORM set_bdc_field USING 'RMMG1-MATNR' p_matnr.
+  PERFORM set_bdc_field USING 'RMMG1-MBRSH' 'A'.
+  PERFORM set_bdc_field USING 'RMMG1-MTART' p_mtart.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '0070'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SELA'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '0070'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=ENTR'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '0080'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=ENTR'.
+  PERFORM set_bdc_field USING 'RMMG1-WERKS' p_plnt.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4004'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP06'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MARA-MATKL' p_matkl.
+  PERFORM set_bdc_field USING 'MARA-GEWEI' 'KG'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP12'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MARA-GEWEI' 'KG'.
+  PERFORM set_bdc_field USING 'MARC-MTVFP' '02'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP13'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MARC-DISGR' '0002'.
+  PERFORM set_bdc_field USING 'MARC-EKGRP' p_ekgrp.
+  PERFORM set_bdc_field USING 'MARC-DISMM' p_dismm.
+  PERFORM set_bdc_field USING 'MARC-FXHOR' '0'.
+  PERFORM set_bdc_field USING 'MARC-DISPO' '001'.
+  PERFORM set_bdc_field USING 'MARC-DISLS' 'EX'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP14'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARC-BESKZ' 'X'.
+  PERFORM set_bdc_field USING 'MARC-DZEIT' '1'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP15'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARC-PERKZ' 'M'.
+  PERFORM set_bdc_field USING 'MARC-STRGR' '10'.
+  PERFORM set_bdc_field USING 'MARC-MTVFP' '02'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP16'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARC-SBDKZ' '1'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4004'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP17'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MARC-SCM_RRP_TYPE' '2'.
+  PERFORM set_bdc_field USING 'MARC-SCM_STRA1' '10'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP18'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MPOP-PRMOD' 'D'.
+  PERFORM set_bdc_field USING 'MARC-PERKZ' 'M'.
+  PERFORM set_bdc_field USING 'MPOP-PERAN' '60'.
+  PERFORM set_bdc_field USING 'MPOP-ANZPR' '12'.
+  PERFORM set_bdc_field USING 'MPOP-KZINI' 'X'.
+  PERFORM set_bdc_field USING 'MPOP-SIGGR' '4.000'.
+  PERFORM set_bdc_field USING 'MARC-AUTRU' 'X'.
+  PERFORM set_bdc_field USING 'MPOP-MODAV' '2'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP19'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MARC-DZEIT' '1'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP25'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MARA-IPRKZ' 'D'.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=SP26'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MBEW-BKLAS' p_bklas.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-STPRS_1' p_stprs_1.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-PEINH_1' p_peinh_1.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-VPRSV_1' p_vprsv_1.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '/00'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MBEW-BKLAS' p_bklas.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-STPRS_1' p_stprs_1.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-STPRS_2' p_stprs_1.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-PEINH_1' p_peinh_1.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-PEINH_2' p_peinh_1.
+  PERFORM set_bdc_field USING 'CKMMAT_DISPLAY-VPRSV_1' p_vprsv_1.
+
+  PERFORM set_bdc_begin USING 'SAPLMGMM' '4000'.
+  PERFORM set_bdc_field USING 'BDC_OKCODE' '=BU'.
+  PERFORM set_bdc_field USING 'MAKT-MAKTX' p_maktx.
+  PERFORM set_bdc_field USING 'MARA-MEINS' 'EA'.
+  PERFORM set_bdc_field USING 'MBEW-EKALR' 'X'.
+  PERFORM set_bdc_field USING 'MARC-AWSLS' '000001'.
+  PERFORM set_bdc_field USING 'MARC-LOSGR' '1'.
+
+  CALL TRANSACTION 'MM01' USING gt_bdc
+                        OPTIONS FROM gs_option
+                        MESSAGES INTO gt_msg.
+
+
+  READ TABLE gt_msg INTO gs_msg WITH KEY msgid = gc_msgid_success   "'M3'
+                                         msgnr = gc_msgnr_success.  "'800'.
+
+
+  IF sy-subrc = 0.
+    "성공처리
+    p_stat   = icon_led_green.
+    p_result = ''.
+
+  ELSE.
+    "실패처리
+    p_stat = icon_led_red.
+    PERFORM set_err_msg USING    gt_msg
+                        CHANGING p_result.
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_BDC_BEGIN</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_bdc_begin  USING     p_prog
+                             p_dynp.
+
+  CLEAR : gs_bdc.
+  gs_bdc-program  = p_prog.
+  gs_bdc-dynpro   = p_dynp.
+  gs_bdc-dynbegin = 'X'.
+  APPEND gs_bdc TO gt_bdc.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_BDC_FIELD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*      --&gt;P_       text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_bdc_field  USING    p_fname
+                             p_value.
+  CLEAR : gs_bdc.
+  gs_bdc-fnam  = p_fname.
+  gs_bdc-fval  = p_value.
+  APPEND gs_bdc TO gt_bdc.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ERR_MSG</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*      --&gt;P_GT_MSG  text</font>
+<font color ="#0000FF">*      &lt;--P_P_RESULT  text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_err_msg  USING    pt_msg LIKE gt_msg
+                  CHANGING p_result.
+
+  DATA : lv_msg    TYPE char255.
+
+  CLEAR : p_result.
+
+<font color ="#0000FF">* RETURN MESSAGE 취합</font>
+  LOOP AT pt_msg INTO gs_msg.
+    CLEAR lv_msg.
+    CALL FUNCTION 'MESSAGE_TEXT_BUILD'
+      EXPORTING
+        msgid               = gs_msg-msgid
+        msgnr               = gs_msg-msgnr
+        msgv1               = gs_msg-msgv1
+        msgv2               = gs_msg-msgv2
+        msgv3               = gs_msg-msgv3
+        msgv4               = gs_msg-msgv4
+      IMPORTING
+        message_text_output = lv_msg.
+
+    CONCATENATE p_result
+                lv_msg
+           INTO p_result
+      SEPARATED BY '#'.
+  ENDLOOP.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>YR_206_EXCEL_0200</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: YR_206_EXCEL_0200</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report Y230_0390</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT yr_206_excel_0200 MESSAGE-ID ym230 NO STANDARD PAGE HEADING.
+
+include <a href ="y206_downup_top.html">Y206_DOWNUP_TOP</a>.
+<font color ="#0000FF">*INCLUDE y230_downup_top.                          " GLOBAL DATA</font>
+include <a href ="y206_downup_c01.html">Y206_DOWNUP_C01</a>.
+<font color ="#0000FF">*INCLUDE y230_downup_c01.                          " CLASS</font>
+include <a href ="y206_downup_o01.html">Y206_DOWNUP_O01</a>.
+<font color ="#0000FF">*INCLUDE y230_downup_o01.                          " PBO-MODULES</font>
+include <a href ="y206_downup_i01.html">Y206_DOWNUP_I01</a>.
+<font color ="#0000FF">*INCLUDE y230_downup_i01.                          " PAI-MODULES</font>
+include <a href ="y206_downup_f01.html">Y206_DOWNUP_F01</a>.
+<font color ="#0000FF">*INCLUDE y230_downup_f01.                          " FORM-ROUTINES</font>
+include <a href ="y206_downup_f02.html">Y206_DOWNUP_F02</a>.
+<font color ="#0000FF">*INCLUDE y230_downup_f02.                          " ALV & EDIT</font>
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">* INITIALIZATION</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+INITIALIZATION.
+  PERFORM initializ.
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+<font color ="#0000FF">* AT SELECTION-SCREEN</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+AT SELECTION-SCREEN.
+  gv_ucomm    = sy-ucomm.
+  CASE sy-ucomm.
+    WHEN 'FC01'.
+      "¿¢¼¿ ÆÄÀÏ ¾÷·Îµå
+      PERFORM xls_upload.
+    WHEN 'FC02'.
+      "¿¢¼¿ ¾ç½Ä ´Ù¿î·Îµå
+      PERFORM xls_form_down.
+    WHEN 'FC03'.
+      "¿¢¼¿ µ¥ÀÌÅÍ ´Ù¿î·Îµå
+      PERFORM xls_form_data_down.
+  ENDCASE.
+
+<font color ="#0000FF">*..ÆÄÀÏ ÀÌ¸§</font>
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_xls.
+  PERFORM get_xls_filename.
+
+AT SELECTION-SCREEN OUTPUT.
+
+<font color ="#0000FF">*AT SELECTION-SCREEN OUTPUT.</font>
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* TITLE_0100 --&gt; [±¸¸Å] CBO TABLE UP-LOAD</font>
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* TITLE_0100 --&gt; TITLE_0100</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: YM230</font>
+<font color ="#0000FF">*000</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 751
+</font>
+</body>
+</html>
